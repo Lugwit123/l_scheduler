@@ -1,0 +1,58 @@
+{
+  "tasks": [
+    {
+      "name": "sample_exe_every_5s",
+      "path": "C:/Windows/System32/notepad.exe",
+      "enabled": false,
+      "arguments": [],
+      "success_return_codes": [
+        0
+      ],
+      "schedule": {
+        "type": "interval",
+        "seconds": 5.0
+      },
+      "working_directory": "D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp"
+    },
+    {
+      "name": "sync_samba_to_muse",
+      "path": "D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat",
+      "enabled": true,
+      "arguments": [],
+      "success_return_codes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "schedule": {
+        "type": "interval",
+        "seconds": 5.0
+      },
+      "working_directory": "D:/TD_Depot/Software/lnk"
+    },
+    {
+      "name": "watchdog_bidirectional_sync",
+      "path": "D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp/rez-package-source/l_scheduler/999.0/src/l_scheduler/py_task/watchdog_bidirectional_sync.py",
+      "enabled": false,
+      "arguments": [
+        "--left",
+        "D:/TD_Depot/Wuzu_dev/anim_upload_muse_tool/src/anim_upload_muse_tool/samba_to_muse",
+        "--right",
+        "L:/temp/j_muse_backup/samba_to_muse"
+      ],
+      "success_return_codes": [
+        0
+      ],
+      "schedule": {
+        "type": "interval",
+        "seconds": 10.0
+      },
+      "working_directory": "D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp"
+    }
+  ]
+}
