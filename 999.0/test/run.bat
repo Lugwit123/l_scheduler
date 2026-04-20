@@ -5,4 +5,4 @@ set "TASK_CONFIG=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\rez-
 set "LOG_FILE=%~dp0logs\l_scheduler.log"
 set "L_SCHEDULER_TASK_FILES_CONFIG=%TASK_CONFIG%"
 set "L_SCHEDULER_LOG_FILE=%LOG_FILE%"
-call "%WUWO%" rez env python-3.11 Lugwit_Module l_scheduler pyside6 -- l_scheduler --ui %*
+call "%WUWO%" rez env python-3.12 Lugwit_Module l_scheduler  -- l_scheduler --ui %*

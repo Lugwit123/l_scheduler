@@ -94,6 +94,7 @@ def main():
             scheduler=scheduler,
             task_config_path=effective_task_files_config,
             instance_tag=args.instance_tag,
+            log_file=effective_log_file,
         )
         return
 

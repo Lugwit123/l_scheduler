@@ -33,7 +33,9 @@
         "type": "interval",
         "seconds": 5.0
       },
-      "working_directory": "D:/TD_Depot/Software/lnk"
+      "working_directory": "D:/TD_Depot/Software/lnk",
+      "external_log_file": "D:/TD_Depot/Software/lnk/logs/sync_samba_to_muse.log",
+      "external_log_env_var": "LOG_FILE"
     },
     {
       "name": "watchdog_bidirectional_sync",

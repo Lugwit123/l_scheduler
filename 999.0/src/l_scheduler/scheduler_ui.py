@@ -6,15 +6,16 @@ import re
 import sys
 import ctypes
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TypeVar
 
-from PySide6.QtCore import Qt, QTimer
+from PySide6.QtCore import QByteArray, QBuffer, QIODevice, Qt, QTimer
 from PySide6.QtGui import QIcon
+from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
-    QAbstractItemView,
     QApplication,
     QDialog,
     QHBoxLayout,
+    QComboBox,
     QLabel,
     QMainWindow,
     QMessageBox,
@@ -24,6 +25,8 @@ from PySide6.QtWidgets import (
     QSystemTrayIcon,
     QTableWidget,
     QTableWidgetItem,
+    QTextEdit,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -227,8 +230,96 @@ class TaskConfigDialog(QDialog):
         return specs
 
 
+_W = TypeVar("_W", bound=QWidget)
+
+
+def _require_ui_child(parent: QWidget, typ: type[_W], name: str) -> _W:
+    w = parent.findChild(typ, name)
+    if w is None:
+        raise RuntimeError(f"UI 缺少控件 {name!r}")
+    return w
+
+
 class SchedulerWindow(QMainWindow):
     """调度器管理窗口。"""
+
+    @staticmethod
+    def _decode_log_bytes(raw: bytes) -> tuple[str, str]:
+        """
+        日志编码探测 + 解码（尽量避免乱码）。
+
+        优先级：
+        - charset-normalizer（若可用）
+        - BOM（utf-8/utf-16/utf-32）
+        - UTF-8 with BOM -> utf-8-sig
+        - UTF-8 strict   -> utf-8
+        - GB18030        -> 兼容 GBK/GB2312（Windows bat 常见）
+        """
+        # 1) 若安装了 charset-normalizer，优先用它做概率识别
+        try:
+            from charset_normalizer import from_bytes  # type: ignore
+
+            best = from_bytes(raw).best()
+            if best is not None and best.encoding:
+                enc = best.encoding.lower()
+                # 规范化显示名
+                if enc in {"gbk", "gb2312"}:
+                    enc = "gb18030"
+                try:
+                    return raw.decode(enc, errors="replace"), enc
+                except LookupError:
+                    pass
+        except Exception:
+            pass
+
+        # 2) BOM 快速判定
+        if raw.startswith(b"\xef\xbb\xbf"):
+            return raw.decode("utf-8-sig", errors="replace"), "utf-8-sig"
+        if raw.startswith(b"\xff\xfe\x00\x00"):
+            return raw.decode("utf-32-le", errors="replace"), "utf-32-le"
+        if raw.startswith(b"\x00\x00\xfe\xff"):
+            return raw.decode("utf-32-be", errors="replace"), "utf-32-be"
+        if raw.startswith(b"\xff\xfe"):
+            return raw.decode("utf-16-le", errors="replace"), "utf-16-le"
+        if raw.startswith(b"\xfe\xff"):
+            return raw.decode("utf-16-be", errors="replace"), "utf-16-be"
+
+        # 3) 严格 UTF-8 尝试；失败则回退 GB18030
+        try:
+            return raw.decode("utf-8", errors="strict"), "utf-8"
+        except UnicodeDecodeError:
+            return raw.decode("gb18030", errors="replace"), "gb18030"
+
+    def _on_tab_changed(self, _index: int) -> None:
+        # 切到日志页时，立即刷新一次
+        if self._is_log_tab_active():
+            self._reload_log_view(force=True)
+
+    def _is_log_tab_active(self) -> bool:
+        try:
+            w = self._tabs.currentWidget()
+            if w is None:
+                return False
+            return getattr(w, "objectName", lambda: "")() == "tabLog"
+        except Exception:
+            return False
+
+    def _resolve_selected_log_path(self) -> Path:
+        sel = self._log_task_combo.currentText().strip() if hasattr(self, "_log_task_combo") else "主日志"
+        if not sel or sel == "主日志":
+            return Path(self._log_file)
+        root = Path(self._log_file)
+        log_dir = (root.parent if root.suffix else root) / "tasks"
+        safe = "".join(ch if (ch.isalnum() or ch in ("-", "_", ".")) else "_" for ch in sel)
+        ptr = log_dir / f"{safe}.external_log_path.txt"
+        if ptr.is_file():
+            try:
+                target = Path(ptr.read_text(encoding="utf-8").strip())
+                if target.is_file():
+                    return target
+            except OSError:
+                pass
+        return log_dir / f"{safe}.log"
 
     def __init__(
         self,
@@ -237,14 +328,18 @@ class SchedulerWindow(QMainWindow):
         instance_tag: str = "",
         refresh_interval_ms: int = 1000,
         app_icon: Optional[QIcon] = None,
+        log_file: str = "logs/l_scheduler.log",
     ) -> None:
         super().__init__()
         self._scheduler = scheduler
         self._task_config_path = task_config_path
         self._instance_tag = instance_tag
         self._refresh_interval_ms = refresh_interval_ms
+        self._log_file = log_file
         self._selected_job_name: Optional[str] = None
         self._tray_icon: Optional[QSystemTrayIcon] = None
+        self._force_quit: bool = False
+        self._last_log_stat: tuple[str, int, int] | None = None  # (path, mtime_ns, size)
 
         title = "L Scheduler - 任务管理"
         if self._instance_tag:
@@ -253,53 +348,117 @@ class SchedulerWindow(QMainWindow):
         if app_icon is not None and not app_icon.isNull():
             self.setWindowIcon(app_icon)
         self.resize(980, 520)
-        self._build_ui()
+        self._load_ui()
         self._setup_tray_icon()
         self._setup_timer()
         self.refresh_table()
+        self._reload_log_view()
 
-    def _build_ui(self) -> None:
-        root = QWidget()
-        layout = QVBoxLayout(root)
-        self.setCentralWidget(root)
+    def _load_ui(self) -> None:
+        ui_path = Path(__file__).resolve().parent / "scheduler_ui.ui"
+        if not ui_path.is_file():
+            raise RuntimeError(f"UI 文件不存在: {ui_path}")
+        raw = QByteArray(ui_path.read_bytes())
+        buf = QBuffer()
+        buf.setData(raw)
+        if not buf.open(QIODevice.OpenModeFlag.ReadOnly):
+            raise RuntimeError(f"无法读取 UI 内容: {ui_path}")
+        loader = QUiLoader()
+        try:
+            central = loader.load(buf, None)
+        finally:
+            buf.close()
+        if central is None:
+            raise RuntimeError(f"加载 UI 失败: {ui_path} — {loader.errorString()}")
+        self.setCentralWidget(central)
 
-        title = QLabel("定时任务管理面板")
-        title.setStyleSheet("font-size: 18px; font-weight: bold;")
-        layout.addWidget(title)
-
-        self.table = QTableWidget(0, 8)
-        self.table.setHorizontalHeaderLabels(
-            ["任务名", "启用", "定时", "来源", "执行次数", "失败次数", "最近执行", "下次执行"]
+        self._tabs = _require_ui_child(central, QTabWidget, "mainTabs")
+        self.table = _require_ui_child(central, QTableWidget, "taskTable")
+        self.status_label = _require_ui_child(central, QLabel, "statusLabel")
+        self.btn_refresh = _require_ui_child(central, QPushButton, "refreshButton")
+        self.btn_run = _require_ui_child(central, QPushButton, "runButton")
+        self.btn_toggle = _require_ui_child(central, QPushButton, "toggleButton")
+        self.btn_settings = _require_ui_child(central, QPushButton, "settingsButton")
+        self.btn_minimize_to_tray = _require_ui_child(
+            central, QPushButton, "minimizeToTrayButton"
         )
-        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+
+        self._log_path_label = _require_ui_child(central, QLabel, "logPathLabel")
+        self._log_text = _require_ui_child(central, QTextEdit, "logText")
+        self._log_refresh_btn = _require_ui_child(
+            central, QPushButton, "logRefreshButton"
+        )
+        self._log_task_combo = _require_ui_child(central, QComboBox, "logTaskCombo")
+
+        self.table.setHorizontalHeaderLabels(
+            ["任务名", "启用", "定时", "来源", "执行次数", "失败次数", "最近执行", "实际间隔", "平均速度", "下次执行"]
+        )
         self.table.itemSelectionChanged.connect(self._on_selection_changed)
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setColumnWidth(3, 200)
-        layout.addWidget(self.table)
-
-        btn_layout = QHBoxLayout()
-        self.btn_refresh = QPushButton("刷新")
-        self.btn_run = QPushButton("立即执行")
-        self.btn_toggle = QPushButton("启用/停用")
-        self.btn_settings = QPushButton("设置")
-        self.btn_minimize_to_tray = QPushButton("最小化到通知栏")
-        btn_layout.addWidget(self.btn_refresh)
-        btn_layout.addWidget(self.btn_run)
-        btn_layout.addWidget(self.btn_toggle)
-        btn_layout.addWidget(self.btn_settings)
-        btn_layout.addWidget(self.btn_minimize_to_tray)
-        btn_layout.addStretch()
-        layout.addLayout(btn_layout)
-
-        self.status_label = QLabel("状态: 未选择任务")
-        layout.addWidget(self.status_label)
 
         self.btn_refresh.clicked.connect(self.refresh_table)
         self.btn_run.clicked.connect(self.run_selected_job)
         self.btn_toggle.clicked.connect(self.toggle_selected_job)
         self.btn_settings.clicked.connect(self.open_settings)
         self.btn_minimize_to_tray.clicked.connect(self.minimize_to_tray)
+        self._log_refresh_btn.clicked.connect(self._reload_log_view)
+        self._log_task_combo.currentIndexChanged.connect(self._reload_log_view)
+        self._tabs.currentChanged.connect(self._on_tab_changed)
+        self._rebuild_log_task_combo()
+        self._reload_log_view()
+
+    def _rebuild_log_task_combo(self) -> None:
+        cur = self._log_task_combo.currentText().strip()
+        self._log_task_combo.blockSignals(True)
+        self._log_task_combo.clear()
+        self._log_task_combo.addItem("主日志")
+        for job in self._scheduler.list_jobs():
+            self._log_task_combo.addItem(job.name)
+        if cur:
+            idx = self._log_task_combo.findText(cur, Qt.MatchFlag.MatchExactly)
+            if idx >= 0:
+                self._log_task_combo.setCurrentIndex(idx)
+        self._log_task_combo.blockSignals(False)
+
+    def _reload_log_view(self, force: bool = False) -> None:
+        max_tail = 512_000
+        p = self._resolve_selected_log_path()
+        try:
+            encoding_label = ""
+            if not p.exists():
+                self._log_path_label.setText(f"日志文件：{p}")
+                self._log_text.setPlainText("（尚无日志文件）")
+                self._last_log_stat = (str(p), 0, 0)
+                return
+            st = p.stat()
+            size = st.st_size
+            mtime_ns = getattr(st, "st_mtime_ns", int(st.st_mtime * 1_000_000_000))
+            cur_stat = (str(p), int(mtime_ns), int(size))
+            if not force and self._last_log_stat == cur_stat:
+                return
+
+            sb = self._log_text.verticalScrollBar()
+            at_bottom = sb.value() >= (sb.maximum() - 4)
+            with p.open("rb") as f:
+                if size > max_tail:
+                    f.seek(-max_tail, 2)
+                    raw = f.read()
+                    nl = raw.find(b"\n")
+                    raw = raw[nl + 1 :] if nl >= 0 else raw
+                    head = f"...（日志较大，仅显示末尾约 {max_tail // 1024} KB）...\n\n"
+                else:
+                    raw = f.read()
+                    head = ""
+            text, enc = self._decode_log_bytes(raw)
+            encoding_label = f"（编码: {enc}）"
+            self._log_path_label.setText(f"日志文件：{p} {encoding_label}")
+            self._log_text.setPlainText(head + text)
+            if at_bottom:
+                sb.setValue(sb.maximum())
+            self._last_log_stat = cur_stat
+        except OSError as e:
+            self._log_text.setPlainText(f"读取日志失败: {e}")
 
     def _setup_tray_icon(self) -> None:
         """初始化通知栏图标与菜单。"""
@@ -328,8 +487,14 @@ class SchedulerWindow(QMainWindow):
 
     def _setup_timer(self) -> None:
         self._timer = QTimer(self)
-        self._timer.timeout.connect(self.refresh_table)
+        self._timer.timeout.connect(self._on_tick)
         self._timer.start(self._refresh_interval_ms)
+
+    def _on_tick(self) -> None:
+        self.refresh_table()
+        # 仅在日志页自动刷新，避免无意义 IO
+        if self._is_log_tab_active():
+            self._reload_log_view(force=False)
 
     def _on_selection_changed(self) -> None:
         row = self.table.currentRow()
@@ -343,6 +508,7 @@ class SchedulerWindow(QMainWindow):
 
     def refresh_table(self) -> None:
         rows = self._scheduler.status()
+        self._rebuild_log_task_combo()
         self.table.setRowCount(len(rows))
         for idx, row in enumerate(rows):
             values = [
@@ -353,6 +519,8 @@ class SchedulerWindow(QMainWindow):
                 str(row["run_count"]),
                 str(row["error_count"]),
                 str(row["last_run"] or "-"),
+                str(row.get("actual_interval") or "-"),
+                str(row.get("avg_interval") or "-"),
                 row["next_run"],
             ]
             for col, value in enumerate(values):
@@ -436,7 +604,14 @@ class SchedulerWindow(QMainWindow):
 
     def restore_from_tray(self) -> None:
         """从通知栏恢复窗口。"""
+        # Windows 上有时仅 showNormal/activateWindow 不会真正把窗口“恢复到可交互前台”，
+        # 这里做更强的恢复：清掉最小化状态、显示、置顶、激活。
+        try:
+            self.setWindowState(self.windowState() & ~Qt.WindowState.WindowMinimized)
+        except Exception:
+            pass
         self.showNormal()
+        self.show()
         self.raise_()
         self.activateWindow()
 
@@ -447,9 +622,17 @@ class SchedulerWindow(QMainWindow):
     def _quit_from_tray(self) -> None:
         if self._tray_icon is not None:
             self._tray_icon.hide()
+        self._force_quit = True
         self.close()
 
     def closeEvent(self, event) -> None:  # type: ignore[override]
+        # 点击窗口关闭按钮时，默认最小化到通知栏，避免误停调度器。
+        # 只有通过通知栏菜单「退出」才真正关闭并停止 scheduler。
+        if not self._force_quit and self._tray_icon is not None:
+            event.ignore()
+            self.minimize_to_tray()
+            return
+
         self._timer.stop()
         if self._tray_icon is not None:
             self._tray_icon.hide()
@@ -457,7 +640,12 @@ class SchedulerWindow(QMainWindow):
         event.accept()
 
 
-def run_scheduler_ui(scheduler: Scheduler, task_config_path: str, instance_tag: str = "") -> int:
+def run_scheduler_ui(
+    scheduler: Scheduler,
+    task_config_path: str,
+    instance_tag: str = "",
+    log_file: str = "logs/l_scheduler.log",
+) -> int:
     """启动并阻塞运行 UI。"""
     # On Windows, set explicit AppUserModelID so taskbar icon is stable and grouped correctly.
     if sys.platform.startswith("win"):
@@ -468,9 +656,8 @@ def run_scheduler_ui(scheduler: Scheduler, task_config_path: str, instance_tag: 
             # Non-fatal: UI can still run without explicit taskbar AppID.
             pass
 
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication(sys.argv)
+    inst = QApplication.instance()
+    app = inst if isinstance(inst, QApplication) else QApplication(sys.argv)
     app_icon = _resolve_scheduler_icon(app)
     if not app_icon.isNull():
         app.setWindowIcon(app_icon)
@@ -479,6 +666,7 @@ def run_scheduler_ui(scheduler: Scheduler, task_config_path: str, instance_tag: 
         task_config_path=task_config_path,
         instance_tag=instance_tag,
         app_icon=app_icon,
+        log_file=log_file,
     )
     window.show()
     return app.exec()

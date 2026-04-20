@@ -20,6 +20,8 @@ class JobStatus(TypedDict):
     run_count: int
     error_count: int
     last_run: Optional[str]
+    actual_interval: Optional[str]
+    avg_interval: Optional[str]
     next_run: str
     source: str
 
@@ -48,6 +50,8 @@ class Job:
         self.source = source
 
         self.last_run: Optional[datetime] = None
+        self.prev_run: Optional[datetime] = None
+        self.first_run: Optional[datetime] = None
         self.next_run: datetime = self._calc_next_run()
         self.run_count = 0
         self.error_count = 0
@@ -79,7 +83,10 @@ class Job:
                 if not self.enabled or datetime.now() < self.next_run:
                     return False
             self._running = True
+            self.prev_run = self.last_run
             self.last_run = datetime.now()
+            if self.first_run is None:
+                self.first_run = self.last_run
             self.run_count += 1
             return True
 
@@ -145,7 +152,7 @@ class Scheduler:
     def every(self, seconds: float, name: Optional[str] = None, enabled: bool = True):
         """装饰器：每隔 N 秒执行一次"""
         def decorator(func: Callable):
-            job_name = name or func.__name__
+            job_name = name or getattr(func, "__name__", "job")
             self.add_job(Job(job_name, func, interval=seconds, enabled=enabled))
             return func
         return decorator
@@ -153,7 +160,7 @@ class Scheduler:
     def daily(self, at: str, name: Optional[str] = None, enabled: bool = True):
         """装饰器：每天 HH:MM 执行一次"""
         def decorator(func: Callable):
-            job_name = name or func.__name__
+            job_name = name or getattr(func, "__name__", "job")
             self.add_job(Job(job_name, func, at=at, enabled=enabled))
             return func
         return decorator
@@ -221,6 +228,15 @@ class Scheduler:
         """返回所有任务的状态快照"""
         result: list[JobStatus] = []
         for j in self._jobs:
+            actual_interval: Optional[str] = None
+            if j.last_run and j.prev_run:
+                sec = max(0.0, (j.last_run - j.prev_run).total_seconds())
+                actual_interval = f"{sec:.1f}s"
+            avg_interval: Optional[str] = None
+            if j.first_run and j.last_run and j.run_count >= 2:
+                denom = max(1, j.run_count - 1)
+                sec_avg = max(0.0, (j.last_run - j.first_run).total_seconds() / denom)
+                avg_interval = f"{sec_avg:.1f}s/次"
             result.append({
                 "name": j.name,
                 "enabled": j.enabled,
@@ -228,6 +244,8 @@ class Scheduler:
                 "run_count": j.run_count,
                 "error_count": j.error_count,
                 "last_run": j.last_run.strftime("%Y-%m-%d %H:%M:%S") if j.last_run else None,
+                "actual_interval": actual_interval,
+                "avg_interval": avg_interval,
                 "next_run": j.next_run.strftime("%Y-%m-%d %H:%M:%S"),
                 "source": j.source,
             })

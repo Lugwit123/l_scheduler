@@ -1,0 +1,796 @@
+[2026-04-20 16:30:29] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:30:40] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163030.log
+[CHECK][samba_to_muse] robocopy exit code: 1
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163030.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163030.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163030.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 1
+
+[2026-04-20 16:30:40] 退出码: 0
+
+[2026-04-20 16:30:45] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:30:59] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163046.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163046.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163046.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163046.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:30:59] 退出码: 0
+
+[2026-04-20 16:31:05] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:31:15] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163105.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163105.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163105.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163105.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:31:15] 退出码: 0
+
+[2026-04-20 16:31:20] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:31:31] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163120.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163120.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163120.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163120.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:31:31] 退出码: 0
+
+[2026-04-20 16:31:37] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:31:45] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163137.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163137.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163137.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163137.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:31:45] 退出码: 0
+
+[2026-04-20 16:31:51] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:32:00] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163151.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163151.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163151.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163151.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:32:00] 退出码: 0
+
+[2026-04-20 16:32:06] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:32:14] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163206.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163206.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163206.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163206.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:32:14] 退出码: 0
+
+[2026-04-20 16:32:19] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:32:28] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163219.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163219.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163219.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163219.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:32:28] 退出码: 0
+
+[2026-04-20 16:32:33] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:32:41] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163234.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163234.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163234.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163234.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:32:41] 退出码: 0
+
+[2026-04-20 16:32:47] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:32:55] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163247.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163247.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163247.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163247.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:32:55] 退出码: 0
+
+[2026-04-20 16:33:01] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:33:09] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163301.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163301.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163301.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163301.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:33:09] 退出码: 0
+
+[2026-04-20 16:33:14] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:33:23] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163314.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163314.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163314.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163314.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:33:23] 退出码: 0
+
+[2026-04-20 16:33:29] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:33:36] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163329.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163329.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163329.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163329.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:33:36] 退出码: 0
+
+[2026-04-20 16:33:42] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:33:50] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163342.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163342.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163342.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163342.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:33:50] 退出码: 0
+
+[2026-04-20 16:33:56] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:34:04] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163356.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163356.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163356.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163356.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:34:04] 退出码: 0
+
+[2026-04-20 16:34:09] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:34:17] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163409.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163409.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163409.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163409.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:34:17] 退出码: 0
+
+[2026-04-20 16:34:22] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:34:31] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163422.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163422.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163422.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163422.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:34:31] 退出码: 0
+
+[2026-04-20 16:34:36] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:34:46] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163437.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163437.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163437.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163437.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:34:46] 退出码: 0
+
+[2026-04-20 16:34:51] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:35:01] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163451.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163451.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163451.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163451.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:35:01] 退出码: 0
+
+[2026-04-20 16:35:06] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:35:15] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163506.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163506.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163506.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163506.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:35:15] 退出码: 0
+
+[2026-04-20 16:35:20] 开始执行: cmd /c D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat
+
+[2026-04-20 16:35:28] STDOUT:
+[CHECK][samba_to_muse] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\samba_to_muse
+[CHECK][samba_to_muse] source exists: YES
+[CHECK][samba_to_muse] DST=L:\temp\j_muse_backup\samba_to_muse
+[CHECK][samba_to_muse] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163520.log
+[CHECK][samba_to_muse] robocopy exit code: 0
+[CHECK][samba_to_muse] robocopy exit code: 
+[CHECK][Lugwit_Module] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\Lugwit_Module
+[CHECK][Lugwit_Module] source exists: YES
+[CHECK][Lugwit_Module] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module
+[CHECK][Lugwit_Module] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163520.log
+[CHECK][Lugwit_Module] robocopy exit code: 0
+[CHECK][Lugwit_Module] robocopy exit code: 
+[CHECK][pytracemp] SRC=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp
+[CHECK][pytracemp] source exists: YES
+[CHECK][pytracemp] DST=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp
+[CHECK][pytracemp] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163520.log
+[CHECK][pytracemp] robocopy exit code: 0
+[CHECK][pytracemp] robocopy exit code: 
+[CHECK][anim_upload_muse_tool] SRC=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] source exists: YES
+[CHECK][anim_upload_muse_tool] DST=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool
+[CHECK][anim_upload_muse_tool] target exists before: YES
+
+  日志文件: D:\Temp\Log\sync\samba_to_muse_20260420_163520.log
+[CHECK][anim_upload_muse_tool] robocopy exit code: 0
+[CHECK][anim_upload_muse_tool] robocopy exit code:
+
+[2026-04-20 16:35:28] 退出码: 0
+
