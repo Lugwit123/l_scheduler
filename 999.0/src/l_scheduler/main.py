@@ -89,7 +89,14 @@ def main():
 
     if args.ui:
         scheduler.start(block=False)
-        from l_scheduler.scheduler_ui import run_scheduler_ui
+        try:
+            from l_scheduler.scheduler_ui import run_scheduler_ui
+        except ImportError as exc:
+            raise SystemExit(
+                "启动 UI 失败：缺少 PySide6 依赖。\n"
+                "请在当前 Python 3.12 运行时安装 PySide6，或使用不带 --ui 的模式运行。\n"
+                f"原始错误: {exc}"
+            ) from exc
         run_scheduler_ui(
             scheduler=scheduler,
             task_config_path=effective_task_files_config,

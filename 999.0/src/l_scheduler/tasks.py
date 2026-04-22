@@ -37,9 +37,7 @@ class TaskFileSpec(TypedDict):
     arguments: NotRequired[list[str]]
     working_directory: NotRequired[str]
     success_return_codes: NotRequired[list[int]]
-    # 如果任务会自己生成独立日志（尤其是 .bat），可在这里显式指定日志文件路径，
-    # UI 切换到该任务时会直接打开该日志。
-    # 同时执行任务时会把该路径写入外部日志指针文件，并可选注入到环境变量（默认 LOG_FILE）。
+    # 可选：任务自身生成的外部日志（用于 UI 直接打开）。如果是 bat 任务，env_var 可用于注入日志路径变量。
     external_log_file: NotRequired[str]
     external_log_env_var: NotRequired[str]
 
@@ -176,9 +174,9 @@ def _validate_task_dict(raw: object, index: int) -> TaskFileSpec:
         spec["daily_at"] = daily_at
     if working_directory:
         spec["working_directory"] = working_directory
-    if external_log_file and external_log_file.strip():
+    if isinstance(external_log_file, str) and external_log_file.strip():
         spec["external_log_file"] = external_log_file.strip()
-    if external_log_env_var and external_log_env_var.strip():
+    if isinstance(external_log_env_var, str) and external_log_env_var.strip():
         spec["external_log_env_var"] = external_log_env_var.strip()
     return spec
 
@@ -202,8 +200,31 @@ def load_task_file_specs(config_path: str) -> list[TaskFileSpec]:
 
     parsed: list[TaskFileSpec] = []
     for idx, item in enumerate(tasks):
-        parsed.append(_validate_task_dict(item, idx))
+        spec = _validate_task_dict(item, idx)
+        # 允许在 JSON 中使用环境变量与相对路径，提升可移植性
+        spec["path"] = _resolve_config_path(spec["path"], config_file)
+        wd = spec.get("working_directory")
+        if wd:
+            spec["working_directory"] = _resolve_config_path(wd, config_file)
+        ext_log = spec.get("external_log_file")
+        if ext_log:
+            spec["external_log_file"] = _resolve_config_path(ext_log, config_file)
+        parsed.append(spec)
     return parsed
+
+
+def _resolve_config_path(value: str, config_file: Path) -> str:
+    """
+    解析配置中的路径:
+    - 支持环境变量展开（%VAR% / $VAR / ${VAR}）
+    - 支持相对路径：相对于配置文件所在目录
+    - 统一返回绝对路径字符串（Windows 路径也可接受 / 分隔符）
+    """
+    expanded = os.path.expandvars(value)
+    p = Path(expanded)
+    if not p.is_absolute():
+        p = (config_file.parent / p).resolve()
+    return str(p)
 
 
 def save_task_file_specs(config_path: str, task_specs: list[TaskFileSpec]) -> None:
@@ -255,20 +276,11 @@ def _make_command_runner(spec: TaskFileSpec):
     arguments = spec.get("arguments", [])
     working_directory = spec.get("working_directory")
     success_return_codes = set(spec.get("success_return_codes", [0]))
+    external_log_file = spec.get("external_log_file")
+    external_log_env_var = spec.get("external_log_env_var")
 
     def _run() -> None:
         started_at = time.time()
-        log_root = os.environ.get("L_SCHEDULER_LOG_FILE", "logs/l_scheduler.log")
-
-        # 如果配置里明确给了外部日志文件，则提前写指针，保证 UI 切换下拉框即可看到。
-        external_log_file = spec.get("external_log_file")
-        if external_log_file:
-            expanded = os.path.expandvars(external_log_file)
-            _record_external_log_path(
-                task_name=spec["name"],
-                log_root=log_root,
-                target=expanded,
-            )
         ext = Path(command_path).suffix.lower()
         if ext == ".bat":
             cmd = ["cmd", "/c", command_path, *arguments]
@@ -277,76 +289,86 @@ def _make_command_runner(spec: TaskFileSpec):
         else:
             cmd = [command_path, *arguments]
 
+        if external_log_file:
+            # 配置里显式声明了外部日志路径：提前写入指针，UI 能立刻跳转；任务后续也会被 stdout/fs 探测覆盖（若更准确）。
+            try:
+                ptr = _external_log_pointer_path(spec["name"], os.environ.get("L_SCHEDULER_LOG_FILE", "logs/l_scheduler.log"))
+                ptr.write_text(str(Path(external_log_file).resolve()), encoding="utf-8")
+            except Exception:
+                logger.debug("写入 external_log_file 指针失败", exc_info=True)
+
         logger.info("开始执行文件任务: %s", " ".join(cmd))
         _append_task_log(
             task_name=spec["name"],
-            log_root=log_root,
+            log_root=os.environ.get("L_SCHEDULER_LOG_FILE", "logs/l_scheduler.log"),
             message=f"开始执行: {' '.join(cmd)}",
         )
-        env = os.environ.copy()
-        # 给 bat 注入 LOG_FILE（或指定变量名），实现 bat 内部 %LOG_FILE% 与 UI 指向一致。
-        if external_log_file:
-            env_var = spec.get("external_log_env_var") or "LOG_FILE"
-            env[env_var] = os.path.expandvars(external_log_file)
+
+        env = None
+        if external_log_file and external_log_env_var:
+            env = dict(os.environ)
+            env[external_log_env_var] = external_log_file
+        log_root = os.environ.get("L_SCHEDULER_LOG_FILE", "logs/l_scheduler.log")
+        encoding = locale.getpreferredencoding(False)
+        startupinfo = None
+        creationflags = 0
         if os.name == "nt":
             # 在 Windows 上隐藏 cmd/bat 任务的黑窗闪烁。
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = 0
-            result = subprocess.run(
-                cmd,
-                cwd=working_directory or None,
-                env=env,
-                capture_output=True,
-                text=True,
-                encoding=locale.getpreferredencoding(False),
-                errors="replace",
-                check=False,
-                startupinfo=startupinfo,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-            )
-        else:
-            result = subprocess.run(
-                cmd,
-                cwd=working_directory or None,
-                env=env,
-                capture_output=True,
-                text=True,
-                encoding=locale.getpreferredencoding(False),
-                errors="replace",
-                check=False,
-            )
+            creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
+        # 用 Popen 流式读取，避免 capture_output=True 导致大输出占内存
+        proc = subprocess.Popen(
+            cmd,
+            cwd=working_directory or None,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding=encoding,
+            errors="replace",
+            startupinfo=startupinfo,
+            creationflags=creationflags,
+            env=env,
+        )
+        stdout_tail: list[str] = []
+        stderr_tail: list[str] = []
+
+        def _push_tail(buf: list[str], line: str) -> None:
+            buf.append(line)
+            if len(buf) > 200:
+                del buf[:50]
+
+        # 交错读取两路输出（简单轮询）
+        assert proc.stdout is not None and proc.stderr is not None
+        while True:
+            out_line = proc.stdout.readline()
+            err_line = proc.stderr.readline()
+            if out_line:
+                _push_tail(stdout_tail, out_line)
+                _append_task_log(task_name=spec["name"], log_root=log_root, message=f"STDOUT: {out_line.rstrip()}")
+            if err_line:
+                _push_tail(stderr_tail, err_line)
+                _append_task_log(task_name=spec["name"], log_root=log_root, message=f"STDERR: {err_line.rstrip()}")
+            if not out_line and not err_line and proc.poll() is not None:
+                break
+
+        returncode = proc.wait()
         finished_at = time.time()
-        if result.stdout:
-            logger.info("任务标准输出[%s]:\n%s", spec["name"], result.stdout.rstrip())
-            _append_task_log(
-                task_name=spec["name"],
-                log_root=log_root,
-                message=f"STDOUT:\n{result.stdout.rstrip()}",
-            )
-        if result.stderr:
-            logger.warning("任务标准错误[%s]:\n%s", spec["name"], result.stderr.rstrip())
-            _append_task_log(
-                task_name=spec["name"],
-                log_root=log_root,
-                message=f"STDERR:\n{result.stderr.rstrip()}",
-            )
-        _append_task_log(
-            task_name=spec["name"],
-            log_root=log_root,
-            message=f"退出码: {result.returncode}",
-        )
-        _append_task_log(
-            task_name=spec["name"],
-            log_root=log_root,
-            message=f"耗时: {finished_at - started_at:.3f} 秒",
-        )
+
+        if stdout_tail:
+            logger.info("任务标准输出尾部[%s]:\n%s", spec["name"], "".join(stdout_tail).rstrip())
+        if stderr_tail:
+            logger.warning("任务标准错误尾部[%s]:\n%s", spec["name"], "".join(stderr_tail).rstrip())
+
+        _append_task_log(task_name=spec["name"], log_root=log_root, message=f"退出码: {returncode}")
 
         # 如果任务本身会生成独立日志文件，尽量从 stdout/stderr 中解析出路径，供 UI 直接查看。
         _maybe_record_external_log_path(
             task_name=spec["name"],
             log_root=log_root,
-            text=f"{result.stdout or ''}\n{result.stderr or ''}",
+            text="".join(stdout_tail) + "\n" + "".join(stderr_tail),
         )
         # bat 往往把日志写到磁盘但不会在 stdout/stderr 打印路径；这里做一次文件系统兜底探测。
         _maybe_record_external_log_path_from_fs(
@@ -357,10 +379,10 @@ def _make_command_runner(spec: TaskFileSpec):
             started_at=started_at,
             finished_at=finished_at,
         )
-        if result.returncode not in success_return_codes:
+        if returncode not in success_return_codes:
             raise RuntimeError(
                 "文件任务执行失败("
-                f"name={spec['name']}, return_code={result.returncode}, "
+                f"name={spec['name']}, return_code={returncode}, "
                 f"success_codes={sorted(success_return_codes)})"
             )
 
@@ -395,19 +417,6 @@ def _external_log_pointer_path(task_name: str, log_root: str) -> Path:
     log_dir = _task_log_dir_from_root(log_root)
     log_dir.mkdir(parents=True, exist_ok=True)
     return log_dir / f"{_safe_file_stem(task_name)}.external_log_path.txt"
-
-
-def _record_external_log_path(*, task_name: str, log_root: str, target: str) -> None:
-    """把外部日志路径写入指针文件，供 UI 直接打开。"""
-    try:
-        if not target:
-            return
-        p = Path(target)
-        ptr = _external_log_pointer_path(task_name, log_root)
-        # 不强制要求日志文件必须已存在：有些 bat 会在稍后创建/覆盖
-        ptr.write_text(str(p), encoding="utf-8")
-    except Exception:
-        logger.debug("写入外部日志指针失败", exc_info=True)
 
 
 def _maybe_record_external_log_path(*, task_name: str, log_root: str, text: str) -> None:

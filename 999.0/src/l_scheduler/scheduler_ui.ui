@@ -65,7 +65,7 @@
           <enum>QAbstractItemView::SingleSelection</enum>
          </property>
          <property name="columnCount">
-          <number>10</number>
+          <number>8</number>
          </property>
          <property name="rowCount">
           <number>0</number>

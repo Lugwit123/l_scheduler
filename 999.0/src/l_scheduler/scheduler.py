@@ -7,6 +7,7 @@ import threading
 import logging
 from datetime import datetime, timedelta
 from typing import Any, Callable, Optional, TypedDict
+from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger("l_scheduler")
 
@@ -132,14 +133,16 @@ class Scheduler:
         s.stop()    # 停止
     """
 
-    def __init__(self, tick: float = 1.0):
+    def __init__(self, tick: float = 1.0, max_workers: int = 4):
         """
         :param tick: 调度循环间隔（秒），精度下限
         """
         self.tick = tick
+        self.max_workers = max_workers
         self._jobs: list[Job] = []
         self._thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
+        self._executor: Optional[ThreadPoolExecutor] = None
 
     # ------------------------------------------------------------------
     # 注册 API
@@ -191,8 +194,9 @@ class Scheduler:
             return False
         if not job._dispatch(force=True):
             return False
-        t = threading.Thread(target=job.run, name=f"job-manual-{job.name}", daemon=True)
-        t.start()
+        if self._executor is None:
+            self._executor = ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="l_scheduler_job")
+        self._executor.submit(job.run)
         logger.info("手动触发任务: %s", name)
         return True
 
@@ -205,14 +209,17 @@ class Scheduler:
         while not self._stop_event.is_set():
             for job in list(self._jobs):
                 if job._dispatch(force=False):
-                    t = threading.Thread(target=job.run, name=f"job-{job.name}", daemon=True)
-                    t.start()
+                    if self._executor is None:
+                        self._executor = ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="l_scheduler_job")
+                    self._executor.submit(job.run)
             self._stop_event.wait(self.tick)
         logger.info("调度器已停止")
 
     def start(self, block: bool = False):
         """启动调度器。block=True 时阻塞当前线程（适合作为主进程运行）"""
         self._stop_event.clear()
+        if self._executor is None:
+            self._executor = ThreadPoolExecutor(max_workers=self.max_workers, thread_name_prefix="l_scheduler_job")
         if block:
             self._loop()
         else:
@@ -223,6 +230,9 @@ class Scheduler:
         self._stop_event.set()
         if self._thread:
             self._thread.join(timeout=5)
+        if self._executor:
+            self._executor.shutdown(wait=False, cancel_futures=True)
+            self._executor = None
 
     def status(self) -> list[JobStatus]:
         """返回所有任务的状态快照"""

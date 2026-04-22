@@ -16,7 +16,7 @@
     },
     {
       "name": "sync_samba_to_muse",
-      "path": "D:/TD_Depot/Software/lnk/sync_samba_to_muse.bat",
+      "path": "D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp/rez-package-source/l_scheduler/999.0/src/l_scheduler/config/sync_samba_to_muse.bat",
       "enabled": true,
       "arguments": [],
       "success_return_codes": [
