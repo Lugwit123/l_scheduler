@@ -14,6 +14,7 @@ from pathlib import Path
 
 from l_scheduler.scheduler import Scheduler
 from l_scheduler.tasks import TaskConfigError, load_task_file_specs, register_file_tasks
+from l_scheduler.auth_client import login_password
 
 
 def setup_logging(log_file: str) -> None:
@@ -63,6 +64,30 @@ def main():
         default="logs/l_scheduler.log",
         help="日志输出文件路径，默认 logs/l_scheduler.log",
     )
+    parser.add_argument(
+        "--auth-url",
+        type=str,
+        default=os.environ.get("LUGWIT_AUTH_URL", "http://127.0.0.1:1026/api/auth/login"),
+        help="统一登录入口（默认指向 ChatRoom /api/auth/login）",
+    )
+    parser.add_argument(
+        "--auth-username",
+        type=str,
+        default=os.environ.get("LUGWIT_AUTH_USERNAME", ""),
+        help="登录用户名（可用环境变量 LUGWIT_AUTH_USERNAME）",
+    )
+    parser.add_argument(
+        "--auth-password",
+        type=str,
+        default=os.environ.get("LUGWIT_AUTH_PASSWORD", ""),
+        help="登录密码（可用环境变量 LUGWIT_AUTH_PASSWORD）",
+    )
+    parser.add_argument(
+        "--auth-nickname",
+        type=str,
+        default=os.environ.get("LUGWIT_AUTH_NICKNAME", ""),
+        help="可选昵称（兼容 ChatRoom 登录表单）",
+    )
     args = parser.parse_args()
     effective_log_file = os.environ.get("L_SCHEDULER_LOG_FILE", args.log_file)
     setup_logging(effective_log_file)
@@ -77,6 +102,21 @@ def main():
     except TaskConfigError as exc:
         raise SystemExit(f"任务文件配置错误: {exc}") from exc
     register_file_tasks(scheduler, task_specs)
+
+    # Optional: login and export token to child tasks via env.
+    if args.auth_username and args.auth_password:
+        try:
+            res = login_password(
+                auth_url=args.auth_url,
+                username=args.auth_username,
+                password=args.auth_password,
+                nickname=(args.auth_nickname or None),
+            )
+            os.environ["LUGWIT_ACCESS_TOKEN"] = res.access_token
+            os.environ["LUGWIT_TOKEN_TYPE"] = res.token_type
+            logging.getLogger("l_scheduler.auth").info("已获取访问令牌，将注入到子任务环境变量 LUGWIT_ACCESS_TOKEN")
+        except Exception as exc:
+            raise SystemExit(f"认证登录失败: {exc}") from exc
 
     if args.status:
         for row in scheduler.status():

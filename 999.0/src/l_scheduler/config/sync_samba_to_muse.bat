@@ -4,7 +4,7 @@ set "SOURCE=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool
 set "DEST=L:\temp\j_muse_backup\samba_to_muse"
 set "SOURCE_LUGWIT_MODULE=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\rez-package-source\Lugwit_Module\999.0\src\Lugwit_Module"
 set "DEST_LUGWIT_MODULE=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\Lugwit_Module"
-set "SOURCE_PYTRACEMP=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\Lib\pytracemp\src\pytracemp"
+set "SOURCE_PYTRACEMP=D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\rez-package-source\pytracemp\999.0\src\pytracemp"
 set "DEST_PYTRACEMP=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\pytracemp"
 set "SOURCE_ANIM_UPLOAD_MUSE_TOOL=D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool"
 set "DEST_ANIM_UPLOAD_MUSE_TOOL=P:\packages\anim_upload_muse_tool\0.2.3\src\anim_upload_muse_tool"
@@ -44,7 +44,7 @@ set "ROBOCOPY_MT_OPT=/MT:%ROBOCOPY_MT%"
 call :sync_oneway "%SOURCE%" "%DEST%" "samba_to_muse"
 call :sync_oneway "%SOURCE_LUGWIT_MODULE%" "%DEST_LUGWIT_MODULE%" "Lugwit_Module"
 call :sync_oneway "%SOURCE_PYTRACEMP%" "%DEST_PYTRACEMP%" "pytracemp"
-call :sync_oneway "%SOURCE_ANIM_UPLOAD_MUSE_TOOL%" "%DEST_ANIM_UPLOAD_MUSE_TOOL%" "anim_upload_muse_tool"
+@REM call :sync_oneway "%SOURCE_ANIM_UPLOAD_MUSE_TOOL%" "%DEST_ANIM_UPLOAD_MUSE_TOOL%" "anim_upload_muse_tool"
 
 :: 清理旧日志，只保留最新的10份
 cd /d "%LOG_DIR%"
