@@ -43,6 +43,7 @@ from l_scheduler.tasks import (
 def _resolve_scheduler_icon(app: QApplication) -> QIcon:
     """Resolve a stable icon for app/window/tray on Windows."""
     candidates = [
+        Path(__file__).resolve().parent / "icons" / "l_scheduler.svg",
         Path(__file__).resolve().parent / "icons" / "l_scheduler.ico",
         Path(__file__).resolve().parent / "icons" / "l_scheduler.png",
         Path(__file__).resolve().parent / "l_scheduler.ico",
