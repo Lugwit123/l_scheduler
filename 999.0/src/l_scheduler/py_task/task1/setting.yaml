@@ -1,0 +1,61 @@
+# task1 任务配置（双向目录同步 + 单文件同步）
+# 本文件由设置窗口（setting.py）读写，也可手动编辑。
+
+# ── 单文件同步 ────────────────────────────────────────────
+file_sync:
+  # 每个条目：{ src: "源文件路径", dst: "目标文件路径" }
+  # 源文件发生变化时自动复制到目标。目标文件不存在时会自动创建其父目录。
+  pairs: []
+  # 示例：
+  # pairs:
+  #   - src: "D:/project/config.json"
+  #     dst: "L:/backup/config.json"
+  #   - src: "D:/project/data.db"
+  #     dst: "L:/backup/data.db"
+  copy_on_start: true  # 启动时先做一次全量复制
+
+# ── 同步目录 ──────────────────────────────────────────────────────────────
+sync:
+  left: ""          # 源目录（左侧），必填
+  right: ""         # 目标目录（右侧），必填
+
+# ── 行为控制 ──────────────────────────────────────────────────────────────
+behavior:
+  initial_sync: true          # 启动时先做一次双向收敛
+  propagate_delete: false     # 是否同步删除操作（谨慎开启）
+  suppress_ttl_seconds: 1.5   # 写回事件抑制窗口（秒），防止来回复制
+  delete_confirm_delay_seconds: 3.0  # 删除确认延迟（秒），避免网络波动误删
+  ignore_suffixes: ".tmp,.swp,.swx,.log,.cache,.bak"  # 忽略的文件后缀，逗号分隔
+
+# ── 目录可访问性检查 ───────────────────────────────────────────────────────
+ready_check:
+  retries: 5          # 重试次数
+  interval_seconds: 1.0  # 每次重试间隔（秒）
+
+# ── 报错通知 ──────────────────────────────────────────────────────────────
+error_notify:
+  # 支持三种通知方式，可同时启用多种
+  enabled: false
+
+  # Windows 系统托盘气泡通知（需要 win10toast 或 plyer）
+  desktop:
+    enabled: true
+
+  # 邮件通知
+  email:
+    enabled: false
+    smtp_host: "smtp.example.com"
+    smtp_port: 465
+    smtp_ssl: true
+    username: ""
+    password: ""
+    from_addr: ""
+    to_addrs: ""   # 多个收件人用逗号分隔
+
+  # HTTP Webhook（企业微信 / 钉钉 / 飞书 / 自定义）
+  webhook:
+    enabled: false
+    url: ""
+    # 请求体模板，{message} 会被替换为错误信息
+    body_template: '{"msgtype":"text","text":{"content":"{message}"}}'
+    headers: "Content-Type: application/json"  # 额外请求头，格式: Key: Value，多个用换行分隔

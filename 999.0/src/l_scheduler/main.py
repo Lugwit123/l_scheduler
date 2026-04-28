@@ -12,8 +12,8 @@ import time
 import os
 from pathlib import Path
 
-from l_scheduler.scheduler import Scheduler
-from l_scheduler.tasks import TaskConfigError, load_task_file_specs, register_file_tasks
+from l_scheduler.scheduler_engine import Scheduler
+from l_scheduler.tasks import TaskConfigError, load_task_file_specs, register_file_tasks, scan_py_task_dir
 from l_scheduler.auth_client import login_password
 
 
@@ -41,6 +41,7 @@ def setup_logging(log_file: str) -> None:
 
 def main():
     default_task_config = Path(__file__).resolve().parent / "config" / "task_files.json"
+    default_py_task_dir = Path(__file__).resolve().parent / "py_task"
 
     parser = argparse.ArgumentParser(description="l_scheduler - Lugwit 定时任务调度器")
     parser.add_argument("--daemon", action="store_true", help="后台线程运行，不阻塞")
@@ -57,6 +58,12 @@ def main():
         type=str,
         default=str(default_task_config),
         help="任务文件清单 JSON 路径（支持 .bat/.exe）",
+    )
+    parser.add_argument(
+        "--py-task-dir",
+        type=str,
+        default=str(default_py_task_dir),
+        help="py_task 子文件夹自动扫描目录，默认为 <package>/py_task，传入空字符串可禁用扫描",
     )
     parser.add_argument(
         "--log-file",
@@ -97,11 +104,20 @@ def main():
         "L_SCHEDULER_TASK_FILES_CONFIG",
         args.task_files_config,
     )
+    effective_py_task_dir = os.environ.get(
+        "L_SCHEDULER_PY_TASK_DIR",
+        args.py_task_dir,
+    )
     try:
         task_specs = load_task_file_specs(effective_task_files_config)
     except TaskConfigError as exc:
         raise SystemExit(f"任务文件配置错误: {exc}") from exc
     register_file_tasks(scheduler, task_specs)
+
+    # 自动扫描 py_task 目录下的子文件夹任务
+    if effective_py_task_dir and effective_py_task_dir.strip():
+        py_task_specs = scan_py_task_dir(effective_py_task_dir)
+        register_file_tasks(scheduler, py_task_specs)
 
     # Optional: login and export token to child tasks via env.
     if args.auth_username and args.auth_password:
@@ -142,6 +158,7 @@ def main():
             task_config_path=effective_task_files_config,
             instance_tag=args.instance_tag,
             log_file=effective_log_file,
+            py_task_dir=effective_py_task_dir,
         )
         return
 

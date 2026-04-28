@@ -493,7 +493,7 @@ def _maybe_record_external_log_path_from_fs(
 
 def register_file_tasks(scheduler, task_specs: list[TaskFileSpec]) -> None:
     """把文件任务挂载到调度器。"""
-    from l_scheduler.scheduler import Job
+    from l_scheduler.scheduler_engine import Job
 
     for spec in task_specs:
         interval_seconds = spec.get("interval_seconds")
@@ -511,6 +511,114 @@ def register_file_tasks(scheduler, task_specs: list[TaskFileSpec]) -> None:
 
 
 # ------------------------------------------------------------------
+# py_task 目录自动扫描
+# ------------------------------------------------------------------
+
+_PY_TASK_CONFIG_FILE = "task_config.json"
+
+
+def scan_py_task_dir(py_task_root: str | Path) -> list[TaskFileSpec]:
+    """
+    扫描 py_task_root 下所有子文件夹，自动发现任务脚本并生成 TaskFileSpec 列表。
+
+    规则：
+    - 子文件夹内必须有至少一个 .py 文件
+    - 优先选取名为 main.py 的脚本；否则取文件夹内第一个 .py（按名称排序）
+    - 若子文件夹内有 task_config.json，则从中读取调度/参数等配置；
+      否则使用默认值（interval=60s，enabled=False）
+    - task_config.json 支持与 task_files.json 相同的字段（name/schedule/arguments/...），
+      但 path 字段会被自动填充，无需手动填写
+    """
+    root = Path(py_task_root).resolve()
+    if not root.is_dir():
+        logger.warning("scan_py_task_dir: 目录不存在: %s", root)
+        return []
+
+    specs: list[TaskFileSpec] = []
+    for sub in sorted(root.iterdir()):
+        if not sub.is_dir():
+            continue
+        py_files = sorted(sub.glob("*.py"))
+        if not py_files:
+            continue
+        # 优先 main.py，否则取第一个
+        main_candidates = [p for p in py_files if p.name == "main.py"]
+        script = main_candidates[0] if main_candidates else py_files[0]
+
+        # 读取可选的 task_config.json
+        cfg_file = sub / _PY_TASK_CONFIG_FILE
+        raw_cfg: dict = {}
+        if cfg_file.is_file():
+            try:
+                raw_cfg = json.loads(cfg_file.read_text(encoding="utf-8"))
+                if not isinstance(raw_cfg, dict):
+                    raw_cfg = {}
+            except Exception as exc:
+                logger.warning("scan_py_task_dir: 读取 %s 失败: %s", cfg_file, exc)
+
+        # 任务名：task_config.json 里的 name > 文件夹名
+        task_name = str(raw_cfg.get("name") or sub.name).strip()
+
+        # 调度配置
+        schedule_raw = raw_cfg.get("schedule")
+        interval_seconds: float | None = None
+        daily_at: str | None = None
+        schedule_type: Literal["interval", "daily"]
+
+        if isinstance(schedule_raw, dict):
+            stype = schedule_raw.get("type", "interval")
+            if stype == "daily":
+                schedule_type = "daily"
+                daily_at = str(schedule_raw.get("at", "09:00"))
+            else:
+                schedule_type = "interval"
+                interval_seconds = float(schedule_raw.get("seconds", 60.0))
+        else:
+            # 兼容旧字段 interval_seconds / daily_at
+            if "interval_seconds" in raw_cfg:
+                schedule_type = "interval"
+                interval_seconds = float(raw_cfg["interval_seconds"])
+            elif "daily_at" in raw_cfg:
+                schedule_type = "daily"
+                daily_at = str(raw_cfg["daily_at"])
+            else:
+                schedule_type = "interval"
+                interval_seconds = 60.0
+
+        enabled: bool = bool(raw_cfg.get("enabled", False))
+        arguments: list[str] = list(raw_cfg.get("arguments") or [])
+        success_return_codes: list[int] = list(raw_cfg.get("success_return_codes") or [0])
+        working_directory: str = str(raw_cfg.get("working_directory") or "").strip()
+        external_log_file: str = str(raw_cfg.get("external_log_file") or "").strip()
+        external_log_env_var: str = str(raw_cfg.get("external_log_env_var") or "").strip()
+
+        spec: TaskFileSpec = {
+            "name": task_name,
+            "path": str(script),
+            "schedule_type": schedule_type,
+            "enabled": enabled,
+            "arguments": arguments,
+            "success_return_codes": success_return_codes,
+        }
+        if schedule_type == "interval" and interval_seconds is not None:
+            spec["interval_seconds"] = interval_seconds
+        if schedule_type == "daily" and daily_at is not None:
+            spec["daily_at"] = daily_at
+        if working_directory:
+            spec["working_directory"] = working_directory
+        if external_log_file:
+            spec["external_log_file"] = external_log_file
+        if external_log_env_var:
+            spec["external_log_env_var"] = external_log_env_var
+
+        specs.append(spec)
+        logger.debug("scan_py_task_dir: 发现任务 %r -> %s", task_name, script)
+
+    logger.info("scan_py_task_dir: 共扫描到 %d 个 py_task 任务", len(specs))
+    return specs
+
+
+# ------------------------------------------------------------------
 # 注册入口
 # ------------------------------------------------------------------
 
@@ -521,7 +629,7 @@ def register_all(scheduler, heartbeat_interval_seconds: float = 5.0) -> None:
 
     :param scheduler: Scheduler 实例
     """
-    from l_scheduler.scheduler import Job
+    from l_scheduler.scheduler_engine import Job
 
     scheduler.add_job(
         Job(

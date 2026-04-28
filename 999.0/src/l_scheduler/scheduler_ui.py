@@ -2,6 +2,7 @@
 """l_scheduler 的 PySide6 管理界面。"""
 from __future__ import annotations
 
+import importlib.util
 import re
 import sys
 import ctypes
@@ -30,13 +31,14 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from l_scheduler.scheduler import Scheduler
+from l_scheduler.scheduler_engine import Scheduler
 from l_scheduler.tasks import (
     TaskConfigError,
     TaskFileSpec,
     load_task_file_specs,
     register_file_tasks,
     save_task_file_specs,
+    scan_py_task_dir,
 )
 
 
@@ -265,6 +267,7 @@ class SchedulerWindow(QMainWindow):
         refresh_interval_ms: int = 1000,
         app_icon: Optional[QIcon] = None,
         log_file: str = "logs/l_scheduler.log",
+        py_task_dir: str = "",
     ) -> None:
         super().__init__()
         self._scheduler = scheduler
@@ -272,6 +275,7 @@ class SchedulerWindow(QMainWindow):
         self._instance_tag = instance_tag
         self._refresh_interval_ms = refresh_interval_ms
         self._log_file = log_file
+        self._py_task_dir = py_task_dir
         self._selected_job_name: Optional[str] = None
         self._tray_icon: Optional[QSystemTrayIcon] = None
         self._force_quit: bool = False
@@ -334,6 +338,10 @@ class SchedulerWindow(QMainWindow):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setColumnWidth(3, 200)
 
+        # 表格右键菜单
+        self.table.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.table.customContextMenuRequested.connect(self._show_table_context_menu)
+        
         self.btn_refresh.clicked.connect(self.refresh_table)
         self.btn_run.clicked.connect(self.run_selected_job)
         self.btn_toggle.clicked.connect(self.toggle_selected_job)
@@ -429,6 +437,40 @@ class SchedulerWindow(QMainWindow):
         self._timer.timeout.connect(self.refresh_table)
         self._timer.start(self._refresh_interval_ms)
 
+    def _show_table_context_menu(self, pos) -> None:
+        """表格右键菜单：立即执行 / 启用​/​停用 / 任务设置。"""
+        row = self.table.rowAt(pos.y())
+        if row < 0:
+            return
+        # 确保右键同时选中该行
+        self.table.selectRow(row)
+        name_item = self.table.item(row, 0)
+        self._selected_job_name = name_item.text() if name_item else None
+
+        menu = QMenu(self)
+        action_run = menu.addAction("立即执行")
+        action_toggle = menu.addAction("启用/停用")
+        menu.addSeparator()
+        action_task_settings = menu.addAction("任务设置...")
+
+        # 判断当前任务是否支持独立设置（来源为 .py 且同目录有 setting.py）
+        job = self._scheduler.get_job(self._selected_job_name or "")
+        source = getattr(job, "source", "") if job else ""
+        has_setting = (
+            source
+            and Path(source).suffix.lower() == ".py"
+            and (Path(source).resolve().parent / "setting.py").is_file()
+        )
+        action_task_settings.setEnabled(bool(has_setting))
+
+        action = menu.exec(self.table.viewport().mapToGlobal(pos))
+        if action == action_run:
+            self.run_selected_job()
+        elif action == action_toggle:
+            self.toggle_selected_job()
+        elif action == action_task_settings:
+            self.open_task_settings()
+
     def _on_selection_changed(self) -> None:
         row = self.table.currentRow()
         if row < 0:
@@ -505,6 +547,87 @@ class SchedulerWindow(QMainWindow):
         self.status_label.setText(f"状态: 任务 {name} 已{'启用' if new_enabled else '停用'}")
         self.refresh_table()
 
+    def open_task_settings(self) -> None:
+        """打开当前选中 .py 任务同目录下 setting.py 的独立设置窗口。"""
+        name = self._require_selected_job()
+        if name is None:
+            return
+
+        job = self._scheduler.get_job(name)
+        if job is None:
+            QMessageBox.critical(self, "任务不存在", f"找不到任务: {name}")
+            return
+
+        source = getattr(job, "source", "") or ""
+        if Path(source).suffix.lower() != ".py":
+            QMessageBox.information(
+                self,
+                "不支持独立设置",
+                f"任务 {name!r} 不是 .py 脚本，暂不支持独立设置窗口。",
+            )
+            return
+
+        setting_path = Path(source).resolve().parent / "setting.py"
+        if not setting_path.is_file():
+            QMessageBox.information(
+                self,
+                "未找到设置模块",
+                f"在任务目录下未找到 setting.py：\n{setting_path}",
+            )
+            return
+
+        # 动态加载 setting.py
+        try:
+            spec = importlib.util.spec_from_file_location("_task_setting", str(setting_path))
+            if spec is None or spec.loader is None:
+                raise ImportError(f"无法解析模块: {setting_path}")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)  # type: ignore[union-attr]
+        except Exception as exc:
+            QMessageBox.critical(self, "加载设置模块失败", str(exc))
+            return
+
+        create_fn = getattr(mod, "create_settings_dialog", None)
+        if create_fn is None:
+            QMessageBox.critical(
+                self,
+                "接口缺失",
+                f"setting.py 中未实现 create_settings_dialog()：\n{setting_path}",
+            )
+            return
+
+        try:
+            dialog = create_fn(parent=self)
+        except Exception as exc:
+            QMessageBox.critical(self, "创建设置窗口失败", str(exc))
+            return
+
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        # 取新参数并写回 task_files.json
+        get_args_fn = getattr(dialog, "get_arguments", None)
+        if get_args_fn is not None:
+            try:
+                new_args: list[str] = get_args_fn()
+                self._update_task_arguments(name, new_args)
+            except Exception as exc:
+                QMessageBox.warning(self, "参数写回失败", str(exc))
+
+    def _update_task_arguments(self, task_name: str, arguments: list[str]) -> None:
+        """更新 task_files.json 中指定任务的 arguments 并热重载。"""
+        specs = load_task_file_specs(self._task_config_path)
+        updated = False
+        for spec in specs:
+            if spec["name"] == task_name:
+                spec["arguments"] = arguments
+                updated = True
+                break
+        if not updated:
+            return
+        save_task_file_specs(self._task_config_path, specs)
+        self._reload_tasks_from_config()
+
     def open_settings(self) -> None:
         dialog = TaskConfigDialog(config_path=self._task_config_path, parent=self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
@@ -524,6 +647,9 @@ class SchedulerWindow(QMainWindow):
         for job in self._scheduler.list_jobs():
             self._scheduler.remove_job(job.name)
         register_file_tasks(self._scheduler, task_specs)
+        if self._py_task_dir and self._py_task_dir.strip():
+            py_task_specs = scan_py_task_dir(self._py_task_dir)
+            register_file_tasks(self._scheduler, py_task_specs)
         self._scheduler.start(block=False)
         self.refresh_table()
 
@@ -584,6 +710,7 @@ def run_scheduler_ui(
     task_config_path: str,
     instance_tag: str = "",
     log_file: str = "logs/l_scheduler.log",
+    py_task_dir: str = "",
 ) -> int:
     """启动并阻塞运行 UI。"""
     # On Windows, set explicit AppUserModelID so taskbar icon is stable and grouped correctly.
@@ -606,6 +733,7 @@ def run_scheduler_ui(
         instance_tag=instance_tag,
         app_icon=app_icon,
         log_file=log_file,
+        py_task_dir=py_task_dir,
     )
     window.show()
     return app.exec()
