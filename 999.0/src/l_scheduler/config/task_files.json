@@ -38,6 +38,18 @@
       "external_log_env_var": "LOG_FILE"
     },
     {
+      "name": "batch_push_github",
+      "path": "D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp/rez-package-source/repo_tools/batch_push_github.bat",
+      "enabled": true,
+      "arguments": [],
+      "success_return_codes": [0],
+      "schedule": {
+        "type": "interval",
+        "seconds": 1800.0
+      },
+      "working_directory": "D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp/rez-package-source/repo_tools"
+    },
+    {
       "name": "watchdog_bidirectional_sync",
       "path": "D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp/rez-package-source/l_scheduler/999.0/src/l_scheduler/py_task/watchdog_bidirectional_sync.py",
       "enabled": false,

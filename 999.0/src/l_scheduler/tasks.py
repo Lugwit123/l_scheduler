@@ -14,6 +14,7 @@ import subprocess
 import sys
 import datetime
 import re
+import threading
 import time
 from pathlib import Path
 from typing import Literal, NotRequired, TypedDict, cast
@@ -285,7 +286,7 @@ def _make_command_runner(spec: TaskFileSpec):
         if ext == ".bat":
             cmd = ["cmd", "/c", command_path, *arguments]
         elif ext == ".py":
-            cmd = [sys.executable, command_path, *arguments]
+            cmd = [sys.executable, "-u", command_path, *arguments]
         else:
             cmd = [command_path, *arguments]
 
@@ -335,26 +336,27 @@ def _make_command_runner(spec: TaskFileSpec):
         stdout_tail: list[str] = []
         stderr_tail: list[str] = []
 
-        def _push_tail(buf: list[str], line: str) -> None:
-            buf.append(line)
-            if len(buf) > 200:
-                del buf[:50]
+        def _read_pipe(pipe, buf: list[str], stream_name: str) -> None:
+            try:
+                for raw_line in pipe:
+                    line = raw_line.rstrip()
+                    buf.append(line)
+                    if len(buf) > 200:
+                        del buf[:50]
+                    _append_task_log(task_name=spec["name"], log_root=log_root,
+                                     message=f"{stream_name}: {line}")
+            finally:
+                pipe.close()
 
-        # 交错读取两路输出（简单轮询）
         assert proc.stdout is not None and proc.stderr is not None
-        while True:
-            out_line = proc.stdout.readline()
-            err_line = proc.stderr.readline()
-            if out_line:
-                _push_tail(stdout_tail, out_line)
-                _append_task_log(task_name=spec["name"], log_root=log_root, message=f"STDOUT: {out_line.rstrip()}")
-            if err_line:
-                _push_tail(stderr_tail, err_line)
-                _append_task_log(task_name=spec["name"], log_root=log_root, message=f"STDERR: {err_line.rstrip()}")
-            if not out_line and not err_line and proc.poll() is not None:
-                break
+        t_out = threading.Thread(target=_read_pipe, args=(proc.stdout, stdout_tail, "STDOUT"), daemon=True)
+        t_err = threading.Thread(target=_read_pipe, args=(proc.stderr, stderr_tail, "STDERR"), daemon=True)
+        t_out.start()
+        t_err.start()
 
         returncode = proc.wait()
+        t_out.join(timeout=10)
+        t_err.join(timeout=10)
         finished_at = time.time()
 
         if stdout_tail:

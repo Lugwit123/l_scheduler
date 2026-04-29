@@ -352,8 +352,45 @@ class SchedulerWindow(QMainWindow):
         self.btn_restart.clicked.connect(self.restart_app)
         self._log_refresh_btn.clicked.connect(self._reload_log_view)
         self._log_task_combo.currentIndexChanged.connect(self._reload_log_view)
+
+        # 日志文本框右键菜单
+        self._log_text.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self._log_text.customContextMenuRequested.connect(self._show_log_context_menu)
+
         self._rebuild_log_task_combo()
         self._reload_log_view()
+
+    def _current_log_path(self) -> Optional[Path]:
+        """返回当前日志面板显示的日志文件路径，不存在则返回 None。"""
+        label = self._log_path_label.text()
+        prefix = "日志文件："
+        if label.startswith(prefix):
+            p = Path(label[len(prefix):])
+            return p if p.exists() else None
+        return None
+
+    def _show_log_context_menu(self, pos) -> None:
+        """日志文本框右键菜单：复制 / 全选 / 清空日志文件。"""
+        menu = QMenu(self)
+        action_copy = menu.addAction("复制")
+        action_select_all = menu.addAction("全选")
+        menu.addSeparator()
+        action_clear_file = menu.addAction("清空日志文件")
+
+        log_path = self._current_log_path()
+        action_clear_file.setEnabled(log_path is not None)
+
+        action = menu.exec(self._log_text.viewport().mapToGlobal(pos))
+        if action == action_copy:
+            self._log_text.copy()
+        elif action == action_select_all:
+            self._log_text.selectAll()
+        elif action == action_clear_file and log_path is not None:
+            try:
+                log_path.write_text("", encoding="utf-8")
+                self._reload_log_view()
+            except OSError as e:
+                QMessageBox.warning(self, "清空失败", f"无法清空日志文件：\n{e}")
 
     def _rebuild_log_task_combo(self) -> None:
         cur = self._log_task_combo.currentText().strip()
@@ -455,6 +492,7 @@ class SchedulerWindow(QMainWindow):
         action_toggle = menu.addAction("启用/停用")
         menu.addSeparator()
         action_task_settings = menu.addAction("任务设置...")
+        action_view_instances = menu.addAction("查看运行实例...")
 
         # 判断当前任务是否支持独立设置（来源为 .py 且同目录有 setting.py）
         job = self._scheduler.get_job(self._selected_job_name or "")
@@ -465,6 +503,7 @@ class SchedulerWindow(QMainWindow):
             and (Path(source).resolve().parent / "setting.py").is_file()
         )
         action_task_settings.setEnabled(bool(has_setting))
+        action_view_instances.setEnabled(bool(source and Path(source).suffix.lower() == ".py"))
 
         action = menu.exec(self.table.viewport().mapToGlobal(pos))
         if action == action_run:
@@ -473,6 +512,77 @@ class SchedulerWindow(QMainWindow):
             self.toggle_selected_job()
         elif action == action_task_settings:
             self.open_task_settings()
+        elif action == action_view_instances:
+            self._show_process_instances()
+
+    def _show_process_instances(self) -> None:
+        """扫描所有 Python 进程，查找与当前任务源文件相关的运行实例。"""
+        name = self._selected_job_name
+        if not name:
+            return
+
+        job = self._scheduler.get_job(name)
+        source = getattr(job, "source", "") if job else ""
+        if not source:
+            QMessageBox.information(self, "无法查找实例", f"任务 {name!r} 没有关联的源文件路径。")
+            return
+
+        source_path = Path(source).resolve()
+        source_str = str(source_path).lower()
+
+        try:
+            import psutil
+        except ImportError:
+            QMessageBox.critical(
+                self, "缺少依赖",
+                "需要安装 psutil 才能扫描进程。\n运行: pip install psutil",
+            )
+            return
+
+        import datetime as _dt
+
+        matches: list[tuple[int, str, str]] = []
+        for proc in psutil.process_iter(["pid", "name", "cmdline", "create_time"]):
+            try:
+                pname = (proc.info["name"] or "").lower()
+                if "python" not in pname:
+                    continue
+                cmdline: list[str] = proc.info["cmdline"] or []
+                if not any(source_str in arg.lower() for arg in cmdline):
+                    continue
+                ct = _dt.datetime.fromtimestamp(proc.info["create_time"]).strftime("%Y-%m-%d %H:%M:%S")
+                matches.append((proc.info["pid"], " ".join(cmdline), ct))
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+        if not matches:
+            text = (
+                f"未找到与任务 {name!r} 相关的 Python 进程。\n\n"
+                f"扫描脚本路径：\n{source_path}"
+            )
+            QMessageBox.information(self, f"运行实例 - {name}", text)
+            return
+
+        lines = [f"找到 {len(matches)} 个相关 Python 进程：\n"]
+        for pid, cmdline, ct in matches:
+            lines.append(f"PID: {pid}    启动时间: {ct}")
+            lines.append(f"  命令: {cmdline[:300]}")
+            lines.append("")
+
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"运行实例 - {name}")
+        dialog.resize(800, 320)
+        layout = QVBoxLayout(dialog)
+        label = QLabel(f"任务脚本：{source_path}")
+        layout.addWidget(label)
+        text_edit = QTextEdit()
+        text_edit.setReadOnly(True)
+        text_edit.setPlainText("\n".join(lines))
+        layout.addWidget(text_edit)
+        btn_close = QPushButton("关闭")
+        btn_close.clicked.connect(dialog.accept)
+        layout.addWidget(btn_close)
+        dialog.exec()
 
     def _on_selection_changed(self) -> None:
         row = self.table.currentRow()
@@ -557,6 +667,10 @@ class SchedulerWindow(QMainWindow):
             QMessageBox.critical(self, "触发失败", f"任务 {name!r} 触发失败，请稍后重试。")
             return
 
+        # 立即执行同时启用，使"启用"列显示"是"并加入自动调度
+        if not job.enabled:
+            self._scheduler.set_job_enabled(name, True)
+
         self.status_label.setText(f"状态: 已触发 {name}，等待启动结果…")
         self.refresh_table()
         QTimer.singleShot(2500, lambda: self._check_run_result(name, prev_run_count, prev_error_count))
@@ -600,6 +714,35 @@ class SchedulerWindow(QMainWindow):
         else:
             self.status_label.setText(f"状态: 任务 {name} 已触发，请稍后观察状态列")
 
+    def _kill_task_processes(self, source: str) -> tuple[list[int], list[str]]:
+        """查找并终止与 source 脚本相关的 Python 进程。
+        返回 (killed_pids, errors)。"""
+        try:
+            import psutil
+        except ImportError:
+            return [], ["psutil 未安装，无法自动终止进程"]
+
+        source_str = str(Path(source).resolve()).lower()
+        killed: list[int] = []
+        errors: list[str] = []
+        for proc in psutil.process_iter(["pid", "name", "cmdline"]):
+            try:
+                pname = (proc.info["name"] or "").lower()
+                if "python" not in pname:
+                    continue
+                cmdline: list[str] = proc.info["cmdline"] or []
+                if not any(source_str in arg.lower() for arg in cmdline):
+                    continue
+                proc.terminate()
+                try:
+                    proc.wait(timeout=5)
+                except psutil.TimeoutExpired:
+                    proc.kill()
+                killed.append(proc.info["pid"])
+            except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+                errors.append(str(e))
+        return killed, errors
+
     def toggle_selected_job(self) -> None:
         name = self._require_selected_job()
         if name is None:
@@ -615,6 +758,21 @@ class SchedulerWindow(QMainWindow):
         if not ok:
             QMessageBox.critical(self, "切换失败", f"任务状态更新失败: {name}")
             return
+
+        if not new_enabled:
+            source = getattr(job, "source", "") or ""
+            if source and Path(source).suffix.lower() == ".py":
+                killed, errors = self._kill_task_processes(source)
+                lines: list[str] = [f"任务 {name!r} 已停用。"]
+                if killed:
+                    lines.append(f"\n已终止 {len(killed)} 个关联进程：")
+                    lines += [f"  PID {pid}" for pid in killed]
+                else:
+                    lines.append("\n未找到关联的运行进程。")
+                if errors:
+                    lines.append("\n警告：" + "；".join(errors))
+                QMessageBox.information(self, "停用任务", "\n".join(lines))
+
         self.status_label.setText(f"状态: 任务 {name} 已{'启用' if new_enabled else '停用'}")
         self.refresh_table()
 

@@ -16,9 +16,12 @@ watchdog 双向同步任务。
 from __future__ import annotations
 
 import argparse
+import atexit
 import copy
+import os
 import shutil
 import smtplib
+import sys
 import threading
 import time
 import urllib.request
@@ -44,7 +47,7 @@ _DEFAULTS: dict[str, Any] = {
         "suppress_ttl_seconds": 1.5,
         "delete_confirm_delay_seconds": 3.0,
         "ignore_suffixes": ".tmp,.swp,.swx,.log,.cache,.bak,.pyc,.pyo,.pyd",
-        "ignore_dirs": ".git,.svn,.hg,.idea,__pycache__,.mypy_cache,build,dist,.tox,.venv,venv,node_modules",
+        "ignore_dirs": ".git,.svn,.hg,.idea,__pycache__,.mypy_cache,build,dist,.tox,.venv,venv,node_modules,py_312,packages",
     },
     "ready_check": {"retries": 5, "interval_seconds": 1.0},
     "error_notify": {
@@ -188,12 +191,52 @@ def _same_file(src: Path, dst: Path) -> bool:
 _DEFAULT_IGNORE_DIRS: frozenset[str] = frozenset(
     d.strip() for d in _DEFAULTS["behavior"]["ignore_dirs"].split(",") if d.strip()
 )
+_DEFAULT_IGNORE_SUFFIXES: frozenset[str] = frozenset(
+    s.strip().lower() for s in _DEFAULTS["behavior"]["ignore_suffixes"].split(",") if s.strip()
+)
+
+_LOCK_FILE = Path(__file__).resolve().parent / ".watchdog_sync.pid"
 
 
-def _iter_files(root: Path, ignore_dirs: frozenset[str] = _DEFAULT_IGNORE_DIRS) -> list[Path]:
+def _acquire_singleton() -> bool:
+    """PID 单例锁：已有实例运行则返回 False。"""
+    if _LOCK_FILE.exists():
+        try:
+            pid = int(_LOCK_FILE.read_text(encoding="utf-8").strip())
+            if pid != os.getpid():
+                alive = False
+                try:
+                    if sys.platform == "win32":
+                        import ctypes
+                        h = ctypes.windll.kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
+                        if h:
+                            ctypes.windll.kernel32.CloseHandle(h)
+                            alive = True
+                    else:
+                        os.kill(pid, 0)
+                        alive = True
+                except Exception:
+                    pass
+                if alive:
+                    print(f"[singleton] watchdog_bidirectional_sync 已在运行 (PID {pid})，跳过本次调度")
+                    return False
+        except Exception:
+            pass
+    _LOCK_FILE.write_text(str(os.getpid()), encoding="utf-8")
+    atexit.register(lambda: _LOCK_FILE.unlink(missing_ok=True))
+    return True
+
+
+def _iter_files(
+    root: Path,
+    ignore_dirs: frozenset[str] = _DEFAULT_IGNORE_DIRS,
+    ignore_suffixes: frozenset[str] = _DEFAULT_IGNORE_SUFFIXES,
+) -> list[Path]:
     result: list[Path] = []
     for p in root.rglob("*"):
         if not p.is_file():
+            continue
+        if p.suffix.lower() in ignore_suffixes or p.name.startswith("~$"):
             continue
         try:
             rel = p.relative_to(root)
@@ -441,6 +484,10 @@ def _wait_path_ready(path: Path, retries: int, interval_sec: float) -> bool:
 # ── main ───────────────────────────────────────────────────────────────────
 
 def main() -> int:
+    # 单例检查：已有实例运行则直接退出（避免定时调度重复启动）
+    if not _acquire_singleton():
+        return 0
+
     # 先从 yaml 读取基础配置
     yaml_cfg = _load_yaml_cfg()
     y_sync = yaml_cfg.get("sync", {})
