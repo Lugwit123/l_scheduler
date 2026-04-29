@@ -174,7 +174,10 @@ class SyncSettingsDialog(QDialog):
         self._file_pair_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self._file_pair_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self._file_pair_table.setAlternatingRowColors(True)
+        self._file_pair_table.itemChanged.connect(self._on_file_pair_item_changed)
         root.addWidget(self._file_pair_table)
+        
+        self._ensure_empty_rows()
 
         # 操作按钮
         btn_row = QHBoxLayout()
@@ -196,6 +199,36 @@ class SyncSettingsDialog(QDialog):
 
         return w
 
+    def _ensure_empty_rows(self, min_empty: int = 2) -> None:
+        """确保表格末尾至少有指定数量的空行。"""
+        empty_count = 0
+        for r in range(self._file_pair_table.rowCount() - 1, -1, -1):
+            src_item = self._file_pair_table.item(r, 0)
+            dst_item = self._file_pair_table.item(r, 1)
+            src = src_item.text().strip() if src_item else ""
+            dst = dst_item.text().strip() if dst_item else ""
+            if not src and not dst:
+                empty_count += 1
+            else:
+                break
+        
+        for _ in range(min_empty - empty_count):
+            row = self._file_pair_table.rowCount()
+            self._file_pair_table.insertRow(row)
+            self._file_pair_table.setItem(row, 0, QTableWidgetItem(""))
+            self._file_pair_table.setItem(row, 1, QTableWidgetItem(""))
+    
+    def _on_file_pair_item_changed(self, item: QTableWidgetItem) -> None:
+        """当表格项内容改变时，检查是否需要添加新的空行。"""
+        row = item.row()
+        if row == self._file_pair_table.rowCount() - 1:
+            src_item = self._file_pair_table.item(row, 0)
+            dst_item = self._file_pair_table.item(row, 1)
+            src = src_item.text().strip() if src_item else ""
+            dst = dst_item.text().strip() if dst_item else ""
+            if src or dst:
+                self._ensure_empty_rows()
+    
     def _add_file_pair(self) -> None:
         """弹出文件选择对话框添加一行。"""
         src, _ = QFileDialog.getOpenFileName(self, "选择源文件", str(Path.home()))
@@ -204,10 +237,23 @@ class SyncSettingsDialog(QDialog):
         dst, _ = QFileDialog.getSaveFileName(self, "选择目标文件", src)
         if not dst:
             return
+        
+        for r in range(self._file_pair_table.rowCount()):
+            src_item = self._file_pair_table.item(r, 0)
+            dst_item = self._file_pair_table.item(r, 1)
+            src_text = src_item.text().strip() if src_item else ""
+            dst_text = dst_item.text().strip() if dst_item else ""
+            if not src_text and not dst_text:
+                self._file_pair_table.setItem(r, 0, QTableWidgetItem(src))
+                self._file_pair_table.setItem(r, 1, QTableWidgetItem(dst))
+                self._ensure_empty_rows()
+                return
+        
         row = self._file_pair_table.rowCount()
         self._file_pair_table.insertRow(row)
         self._file_pair_table.setItem(row, 0, QTableWidgetItem(src))
         self._file_pair_table.setItem(row, 1, QTableWidgetItem(dst))
+        self._ensure_empty_rows()
 
     def _remove_file_pair(self) -> None:
         """删除已选行。"""
@@ -391,6 +437,8 @@ class SyncSettingsDialog(QDialog):
             self._file_pair_table.setItem(row, 0, QTableWidgetItem(str(pair.get("src", ""))))
             self._file_pair_table.setItem(row, 1, QTableWidgetItem(str(pair.get("dst", ""))))
         self._copy_on_start_chk.setChecked(bool(fs.get("copy_on_start", True)))
+        
+        self._ensure_empty_rows()
 
         # 双向目录同步
         s = c.get("sync", {})
