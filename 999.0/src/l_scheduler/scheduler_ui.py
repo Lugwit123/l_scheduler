@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import subprocess
 import sys
 import ctypes
 from pathlib import Path
@@ -323,6 +324,7 @@ class SchedulerWindow(QMainWindow):
         self.btn_minimize_to_tray = _require_ui_child(
             central, QPushButton, "minimizeToTrayButton"
         )
+        self.btn_restart = _require_ui_child(central, QPushButton, "restartButton")
 
         self._log_path_label = _require_ui_child(central, QLabel, "logPathLabel")
         self._log_text = _require_ui_child(central, QTextEdit, "logText")
@@ -332,7 +334,7 @@ class SchedulerWindow(QMainWindow):
         self._log_task_combo = _require_ui_child(central, QComboBox, "logTaskCombo")
 
         self.table.setHorizontalHeaderLabels(
-            ["任务名", "启用", "定时", "来源", "执行次数", "失败次数", "最近执行", "下次执行"]
+            ["任务名", "启用", "定时", "来源", "执行次数", "失败次数", "最近执行", "下次执行", "状态"]
         )
         self.table.itemSelectionChanged.connect(self._on_selection_changed)
         self.table.horizontalHeader().setStretchLastSection(True)
@@ -347,6 +349,7 @@ class SchedulerWindow(QMainWindow):
         self.btn_toggle.clicked.connect(self.toggle_selected_job)
         self.btn_settings.clicked.connect(self.open_settings)
         self.btn_minimize_to_tray.clicked.connect(self.minimize_to_tray)
+        self.btn_restart.clicked.connect(self.restart_app)
         self._log_refresh_btn.clicked.connect(self._reload_log_view)
         self._log_task_combo.currentIndexChanged.connect(self._reload_log_view)
         self._rebuild_log_task_combo()
@@ -492,6 +495,13 @@ class SchedulerWindow(QMainWindow):
             self._rebuild_log_task_combo()
         self.table.setRowCount(len(rows))
         for idx, row in enumerate(rows):
+            is_running = row.get("running", False)
+            if is_running:
+                state_text = "▶ 运行中"
+            elif row["enabled"]:
+                state_text = "就绪"
+            else:
+                state_text = "停用"
             values = [
                 row["name"],
                 "是" if row["enabled"] else "否",
@@ -501,10 +511,14 @@ class SchedulerWindow(QMainWindow):
                 str(row["error_count"]),
                 str(row["last_run"] or "-"),
                 row["next_run"],
+                state_text,
             ]
             for col, value in enumerate(values):
                 item = QTableWidgetItem(value)
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                if is_running:
+                    item.setBackground(Qt.GlobalColor.darkGreen)
+                    item.setForeground(Qt.GlobalColor.white)
                 self.table.setItem(idx, col, item)
 
         # 列宽计算很耗时：仅在首次或每 10 次刷新时执行一次
@@ -522,12 +536,69 @@ class SchedulerWindow(QMainWindow):
         name = self._require_selected_job()
         if name is None:
             return
+
+        job = self._scheduler.get_job(name)
+        if job is None:
+            QMessageBox.critical(self, "执行失败", f"找不到任务：{name}")
+            return
+        if job.is_running:
+            QMessageBox.information(
+                self, "任务运行中",
+                f"任务 {name!r} 当前正在运行中，无需重复触发。\n"
+                "请观察表格中的\u201c状态\u201d列。",
+            )
+            return
+
+        prev_run_count = job.run_count
+        prev_error_count = job.error_count
+
         ok = self._scheduler.trigger_job_once(name)
         if not ok:
-            QMessageBox.critical(self, "执行失败", f"任务不存在: {name}")
+            QMessageBox.critical(self, "触发失败", f"任务 {name!r} 触发失败，请稍后重试。")
             return
-        self.status_label.setText(f"状态: 已手动触发任务 {name}")
+
+        self.status_label.setText(f"状态: 已触发 {name}，等待启动结果…")
         self.refresh_table()
+        QTimer.singleShot(2500, lambda: self._check_run_result(name, prev_run_count, prev_error_count))
+
+    def _check_run_result(self, name: str, prev_run_count: int, prev_error_count: int) -> None:
+        """2.5 秒后检查任务启动结果并弹窗提示。"""
+        job = self._scheduler.get_job(name)
+        if job is None:
+            return
+        self.refresh_table()
+
+        new_errors = job.error_count - prev_error_count
+        new_runs = job.run_count - prev_run_count
+
+        if job.is_running:
+            QMessageBox.information(
+                self,
+                "✅ 启动成功",
+                f"任务 {name!r} 已成功启动，当前正在运行中。\n"
+                "表格中“状态”列显示 \u25b6 运行中 时表示进程仍在活跃。",
+            )
+            self.status_label.setText(f"状态: 任务 {name} 正在运行")
+        elif new_errors > 0:
+            QMessageBox.critical(
+                self,
+                "❌ 启动失败",
+                f"任务 {name!r} 执行出错（+{new_errors} 次错误）。\n\n"
+                "请切换到“日志”标签页查看详细错误输出。",
+            )
+            self.status_label.setText(f"状态: 任务 {name} 执行失败")
+        elif new_runs > 0:
+            QMessageBox.warning(
+                self,
+                "⚠️ 任务过快完成",
+                f"任务 {name!r} 已执行完成，但在 2.5 秒内就退出了。\n\n"
+                "如果期望任务长期运行（如文件监听），请检查：\n"
+                "  • setting.yaml 中的同步目录 / 文件对是否已配置\n"
+                "  • 切换到“日志”标签页查看具体输出",
+            )
+            self.status_label.setText(f"状态: 任务 {name} 已完成（请检查配置）")
+        else:
+            self.status_label.setText(f"状态: 任务 {name} 已触发，请稍后观察状态列")
 
     def toggle_selected_job(self) -> None:
         name = self._require_selected_job()
@@ -652,6 +723,24 @@ class SchedulerWindow(QMainWindow):
             register_file_tasks(self._scheduler, py_task_specs)
         self._scheduler.start(block=False)
         self.refresh_table()
+
+    def restart_app(self) -> None:
+        """停止调度器并重新启动程序。"""
+        reply = QMessageBox.question(
+            self,
+            "确认重启",
+            "确定要重启程序吗？\n调度器将停止，所有正在运行的任务将被中断。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        self._timer.stop()
+        if self._tray_icon is not None:
+            self._tray_icon.hide()
+        self._scheduler.stop()
+        subprocess.Popen([sys.executable] + sys.argv, close_fds=True)
+        self._force_quit = True
+        self.close()
 
     def minimize_to_tray(self) -> None:
         """按钮触发：最小化到通知栏。"""

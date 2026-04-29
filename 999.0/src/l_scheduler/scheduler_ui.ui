@@ -65,7 +65,7 @@
           <enum>QAbstractItemView::SingleSelection</enum>
          </property>
          <property name="columnCount">
-          <number>8</number>
+          <number>9</number>
          </property>
          <property name="rowCount">
           <number>0</number>
@@ -109,6 +109,16 @@
           <widget class="QPushButton" name="minimizeToTrayButton">
            <property name="text">
             <string>最小化到通知栏</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="restartButton">
+           <property name="text">
+            <string>重启程序</string>
+           </property>
+           <property name="toolTip">
+            <string>停止调度器并重新启动程序</string>
            </property>
           </widget>
          </item>

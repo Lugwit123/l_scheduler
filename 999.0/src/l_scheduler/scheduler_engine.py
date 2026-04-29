@@ -17,6 +17,7 @@ class JobStatus(TypedDict):
 
     name: str
     enabled: bool
+    running: bool
     schedule: str
     run_count: int
     error_count: int
@@ -90,6 +91,11 @@ class Job:
                 self.first_run = self.last_run
             self.run_count += 1
             return True
+
+    @property
+    def is_running(self) -> bool:
+        """当前是否正在执行中（只读）。"""
+        return self._running
 
     def schedule_text(self) -> str:
         """把调度规则转换为人类可读文本。"""
@@ -250,6 +256,7 @@ class Scheduler:
             result.append({
                 "name": j.name,
                 "enabled": j.enabled,
+                "running": j.is_running,
                 "schedule": j.schedule_text(),
                 "run_count": j.run_count,
                 "error_count": j.error_count,

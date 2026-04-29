@@ -43,7 +43,8 @@ _DEFAULTS: dict[str, Any] = {
         "propagate_delete": False,
         "suppress_ttl_seconds": 1.5,
         "delete_confirm_delay_seconds": 3.0,
-        "ignore_suffixes": ".tmp,.swp,.swx,.log,.cache,.bak",
+        "ignore_suffixes": ".tmp,.swp,.swx,.log,.cache,.bak,.pyc,.pyo,.pyd",
+        "ignore_dirs": ".git,.svn,.hg,.idea,__pycache__,.mypy_cache,build,dist,.tox,.venv,venv,node_modules",
     },
     "ready_check": {"retries": 5, "interval_seconds": 1.0},
     "error_notify": {
@@ -184,8 +185,24 @@ def _same_file(src: Path, dst: Path) -> bool:
     )
 
 
-def _iter_files(root: Path) -> list[Path]:
-    return [p for p in root.rglob("*") if p.is_file()]
+_DEFAULT_IGNORE_DIRS: frozenset[str] = frozenset(
+    d.strip() for d in _DEFAULTS["behavior"]["ignore_dirs"].split(",") if d.strip()
+)
+
+
+def _iter_files(root: Path, ignore_dirs: frozenset[str] = _DEFAULT_IGNORE_DIRS) -> list[Path]:
+    result: list[Path] = []
+    for p in root.rglob("*"):
+        if not p.is_file():
+            continue
+        try:
+            rel = p.relative_to(root)
+            if any(part in ignore_dirs for part in rel.parts):
+                continue
+        except ValueError:
+            continue
+        result.append(p)
+    return result
 
 
 def _relative_map(root: Path) -> dict[Path, Path]:
@@ -279,6 +296,12 @@ class MirrorHandler(FileSystemEventHandler):
         p = Path(path)
         if p.name.startswith("~$"):
             return True
+        try:
+            rel = p.resolve().relative_to(self.src_root)
+            if any(part in _DEFAULT_IGNORE_DIRS for part in rel.parts):
+                return True
+        except ValueError:
+            pass
         suffix = p.suffix.lower()
         return suffix in self.ignore_suffixes
 

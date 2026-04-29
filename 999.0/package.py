@@ -5,7 +5,7 @@ version = "999.0"
 description = "Lugwit scheduled task runner - cron-style job scheduler"
 authors = ["Lugwit Team"]
 
-requires = ["python-3.12+<3.13", "Lugwit_Module"]
+requires = ["python-3.12+<3.13", "Lugwit_Module", "watchdog"]
 
 build_command = False
 cachable = True
