@@ -3,7 +3,7 @@
 task1 统一入口。
 
 根据 setting.yaml 的配置决定运行哪种同步模式：
-  - sync.left + sync.right 已填写  → 双向目录同步（watchdog_bidirectional_sync.py）
+  - sync.pairs 非空或 sync.left + sync.right 已填写 → 双向目录同步（watchdog_bidirectional_sync.py）
   - file_sync.pairs 非空           → 单文件同步（file_sync.py）
   - 两者均配置                     → 并行运行两者
   - 均未配置                       → 提示用户完成配置后退出（返回码 1）
@@ -28,7 +28,9 @@ _fs_cfg = _raw.get("file_sync") or {}
 _sync_cfg = _raw.get("sync") or {}
 
 _has_file_sync = bool(_fs_cfg.get("pairs"))
-_has_dir_sync = bool(_sync_cfg.get("left")) and bool(_sync_cfg.get("right"))
+_has_dir_sync = bool(_sync_cfg.get("pairs")) or (
+    bool(_sync_cfg.get("left")) and bool(_sync_cfg.get("right"))
+)
 
 
 # ── 入口 ──────────────────────────────────────────────────────────────────────
@@ -37,7 +39,7 @@ def main() -> int:
     if not _has_file_sync and not _has_dir_sync:
         print(
             "[task1] setting.yaml 中未配置任何同步任务。\n"
-            "  - 目录同步：请填写 sync.left 和 sync.right\n"
+            "  - 目录同步：请在 sync.pairs 中添加至少一条记录\n"
             "  - 文件同步：请在 file_sync.pairs 中添加至少一条记录\n"
             '可通过右键菜单"任务设置..."完成配置。'
         )

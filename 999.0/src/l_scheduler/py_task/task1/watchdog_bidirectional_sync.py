@@ -40,7 +40,7 @@ _SETTING_FILE = Path(__file__).resolve().parent / "setting.yaml"
 
 # ── 默认值（与 setting.yaml 结构对应） ────────────────────────────────────
 _DEFAULTS: dict[str, Any] = {
-    "sync": {"left": "", "right": ""},
+    "sync": {"pairs": [], "left": "", "right": ""},
     "behavior": {
         "initial_sync": True,
         "propagate_delete": False,
@@ -95,6 +95,27 @@ def _load_yaml_cfg() -> dict:
     except Exception as exc:
         print(f"[config] WARNING: 读取 setting.yaml 失败，使用默认值: {exc}")
     return copy.deepcopy(_DEFAULTS)
+
+
+def _sync_pairs_from_cfg(sync_cfg: dict) -> list[dict[str, str]]:
+    """读取新版 sync.pairs，并兼容旧版 sync.left/right。"""
+    result: list[dict[str, str]] = []
+    raw_pairs = sync_cfg.get("pairs") or []
+    if isinstance(raw_pairs, list):
+        for pair in raw_pairs:
+            if not isinstance(pair, dict):
+                continue
+            left = str(pair.get("left", "")).strip()
+            right = str(pair.get("right", "")).strip()
+            if left and right:
+                result.append({"left": left, "right": right})
+
+    left = str(sync_cfg.get("left", "")).strip()
+    right = str(sync_cfg.get("right", "")).strip()
+    legacy_pair = {"left": left, "right": right}
+    if left and right and legacy_pair not in result:
+        result.append(legacy_pair)
+    return result
 
 
 # ── 报错通知 ───────────────────────────────────────────────────────────────
@@ -498,10 +519,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="watchdog 双向目录同步（参数可覆盖 setting.yaml）"
     )
-    parser.add_argument("--left", default=y_sync.get("left", ""),
-                        help="左侧目录（覆盖 yaml）")
-    parser.add_argument("--right", default=y_sync.get("right", ""),
-                        help="右侧目录（覆盖 yaml）")
+    parser.add_argument("--left", default=None,
+                        help="左侧目录（旧版单目录对参数；需与 --right 同时使用）")
+    parser.add_argument("--right", default=None,
+                        help="右侧目录（旧版单目录对参数；需与 --left 同时使用）")
+    parser.add_argument("--pair", nargs=2, action="append", default=None,
+                        metavar=("LEFT", "RIGHT"),
+                        help="增加一组双向同步目录，可重复传入")
     parser.add_argument("--no-initial-sync", action="store_true",
                         default=not bool(y_beh.get("initial_sync", True)),
                         help="关闭启动前双向初始化同步")
@@ -519,68 +543,87 @@ def main() -> int:
                         default=float(y_rc.get("interval_seconds", 1.0)))
     args = parser.parse_args()
 
-    if not args.left or not args.right:
-        msg = "ERROR: 未配置同步目录，请在 setting.yaml 中设置 sync.left 和 sync.right，或通过 --left/--right 参数传入。"
+    if args.pair is not None:
+        pair_cfgs = [{"left": left, "right": right} for left, right in args.pair]
+    elif args.left is not None or args.right is not None:
+        if not args.left or not args.right:
+            msg = "ERROR: --left 和 --right 必须同时传入。"
+            print(msg)
+            _notify_error(msg, notify_cfg)
+            return 1
+        pair_cfgs = [{"left": args.left, "right": args.right}]
+    else:
+        pair_cfgs = _sync_pairs_from_cfg(y_sync)
+
+    if not pair_cfgs:
+        msg = "ERROR: 未配置同步目录，请在 setting.yaml 中设置 sync.pairs，或通过 --pair LEFT RIGHT 参数传入。"
         print(msg)
         _notify_error(msg, notify_cfg)
         return 1
 
-    left = Path(args.left).resolve()
-    right = Path(args.right).resolve()
+    pairs: list[tuple[Path, Path]] = [
+        (Path(pair["left"]).resolve(), Path(pair["right"]).resolve())
+        for pair in pair_cfgs
+    ]
 
-    if not _wait_path_ready(left, args.ready_check_retries, args.ready_check_interval_seconds):
-        msg = f"ERROR: left path not ready: {left}"
-        print(msg)
-        _notify_error(msg, notify_cfg)
-        return 3
-    if not _wait_path_ready(right, args.ready_check_retries, args.ready_check_interval_seconds):
-        msg = f"ERROR: right path not ready: {right}"
-        print(msg)
-        _notify_error(msg, notify_cfg)
-        return 4
-
-    if not args.no_initial_sync:
-        print(f"[init] bidirectional sync: {left} <-> {right}")
-        try:
-            _initial_bidirectional_sync(left, right)
-        except Exception as exc:
-            msg = f"ERROR: initial sync failed: {exc}"
+    for index, (left, right) in enumerate(pairs, start=1):
+        if not _wait_path_ready(left, args.ready_check_retries, args.ready_check_interval_seconds):
+            msg = f"ERROR: pair {index} left path not ready: {left}"
             print(msg)
             _notify_error(msg, notify_cfg)
-            return 5
+            return 3
+        if not _wait_path_ready(right, args.ready_check_retries, args.ready_check_interval_seconds):
+            msg = f"ERROR: pair {index} right path not ready: {right}"
+            print(msg)
+            _notify_error(msg, notify_cfg)
+            return 4
+
+    if not args.no_initial_sync:
+        for index, (left, right) in enumerate(pairs, start=1):
+            print(f"[init] pair {index}: {left} <-> {right}")
+            try:
+                _initial_bidirectional_sync(left, right)
+            except Exception as exc:
+                msg = f"ERROR: pair {index} initial sync failed: {exc}"
+                print(msg)
+                _notify_error(msg, notify_cfg)
+                return 5
 
     suppress_map: dict[str, float] = {}
     ignore_suffixes = [x.strip().lower() for x in args.ignore_suffixes.split(",") if x.strip()]
 
     observer = Observer()
-    left_to_right = MirrorHandler(
-        src_root=left,
-        dst_root=right,
-        name="L->R",
-        suppress_map=suppress_map,
-        suppress_ttl_sec=args.suppress_ttl_seconds,
-        ignore_suffixes=ignore_suffixes,
-        delete_confirm_delay_sec=args.delete_confirm_delay_seconds,
-        notify_cfg=notify_cfg,
-    )
-    left_to_right.propagate_delete = args.propagate_delete
-    observer.schedule(left_to_right, str(left), recursive=True)
+    for index, (left, right) in enumerate(pairs, start=1):
+        left_to_right = MirrorHandler(
+            src_root=left,
+            dst_root=right,
+            name=f"P{index} L->R",
+            suppress_map=suppress_map,
+            suppress_ttl_sec=args.suppress_ttl_seconds,
+            ignore_suffixes=ignore_suffixes,
+            delete_confirm_delay_sec=args.delete_confirm_delay_seconds,
+            notify_cfg=notify_cfg,
+        )
+        left_to_right.propagate_delete = args.propagate_delete
+        observer.schedule(left_to_right, str(left), recursive=True)
 
-    right_to_left = MirrorHandler(
-        src_root=right,
-        dst_root=left,
-        name="R->L",
-        suppress_map=suppress_map,
-        suppress_ttl_sec=args.suppress_ttl_seconds,
-        ignore_suffixes=ignore_suffixes,
-        delete_confirm_delay_sec=args.delete_confirm_delay_seconds,
-        notify_cfg=notify_cfg,
-    )
-    right_to_left.propagate_delete = args.propagate_delete
-    observer.schedule(right_to_left, str(right), recursive=True)
+        right_to_left = MirrorHandler(
+            src_root=right,
+            dst_root=left,
+            name=f"P{index} R->L",
+            suppress_map=suppress_map,
+            suppress_ttl_sec=args.suppress_ttl_seconds,
+            ignore_suffixes=ignore_suffixes,
+            delete_confirm_delay_sec=args.delete_confirm_delay_seconds,
+            notify_cfg=notify_cfg,
+        )
+        right_to_left.propagate_delete = args.propagate_delete
+        observer.schedule(right_to_left, str(right), recursive=True)
 
     observer.start()
-    print(f"[watch] started: {left} <-> {right}")
+    print(f"[watch] started: {len(pairs)} pair(s)")
+    for index, (left, right) in enumerate(pairs, start=1):
+        print(f"[watch] pair {index}: {left} <-> {right}")
 
     try:
         while True:

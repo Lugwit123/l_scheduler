@@ -54,7 +54,7 @@ _DEFAULTS: dict[str, Any] = {
         "pairs": [],
         "copy_on_start": True,
     },
-    "sync": {"left": "", "right": ""},
+    "sync": {"pairs": [], "left": "", "right": ""},
     "behavior": {
         "initial_sync": True,
         "propagate_delete": False,
@@ -171,7 +171,7 @@ class SyncSettingsDialog(QDialog):
         # 匹配对表格
         self._file_pair_table = QTableWidget(0, 2)
         self._file_pair_table.setHorizontalHeaderLabels(["源文件", "目标文件"])
-        self._file_pair_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self._configure_path_table(self._file_pair_table)
         self._file_pair_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self._file_pair_table.setAlternatingRowColors(True)
         self._file_pair_table.itemChanged.connect(self._on_file_pair_item_changed)
@@ -215,11 +215,12 @@ class SyncSettingsDialog(QDialog):
         for _ in range(min_empty - empty_count):
             row = self._file_pair_table.rowCount()
             self._file_pair_table.insertRow(row)
-            self._file_pair_table.setItem(row, 0, QTableWidgetItem(""))
-            self._file_pair_table.setItem(row, 1, QTableWidgetItem(""))
+            self._file_pair_table.setItem(row, 0, self._make_path_item(""))
+            self._file_pair_table.setItem(row, 1, self._make_path_item(""))
     
     def _on_file_pair_item_changed(self, item: QTableWidgetItem) -> None:
         """当表格项内容改变时，检查是否需要添加新的空行。"""
+        item.setToolTip(item.text().strip())
         row = item.row()
         if row == self._file_pair_table.rowCount() - 1:
             src_item = self._file_pair_table.item(row, 0)
@@ -244,15 +245,15 @@ class SyncSettingsDialog(QDialog):
             src_text = src_item.text().strip() if src_item else ""
             dst_text = dst_item.text().strip() if dst_item else ""
             if not src_text and not dst_text:
-                self._file_pair_table.setItem(r, 0, QTableWidgetItem(src))
-                self._file_pair_table.setItem(r, 1, QTableWidgetItem(dst))
+                self._file_pair_table.setItem(r, 0, self._make_path_item(src))
+                self._file_pair_table.setItem(r, 1, self._make_path_item(dst))
                 self._ensure_empty_rows()
                 return
         
         row = self._file_pair_table.rowCount()
         self._file_pair_table.insertRow(row)
-        self._file_pair_table.setItem(row, 0, QTableWidgetItem(src))
-        self._file_pair_table.setItem(row, 1, QTableWidgetItem(dst))
+        self._file_pair_table.setItem(row, 0, self._make_path_item(src))
+        self._file_pair_table.setItem(row, 1, self._make_path_item(dst))
         self._ensure_empty_rows()
 
     def _remove_file_pair(self) -> None:
@@ -265,19 +266,97 @@ class SyncSettingsDialog(QDialog):
 
     def _build_sync_tab(self) -> QWidget:
         w = QWidget()
-        form = QFormLayout(w)
-        form.setSpacing(10)
-        form.setContentsMargins(12, 12, 12, 12)
+        root = QVBoxLayout(w)
+        root.setSpacing(8)
+        root.setContentsMargins(12, 12, 12, 12)
 
-        self._left_edit = QLineEdit()
-        self._left_edit.setPlaceholderText("源目录（左侧），必填")
-        form.addRow("源目录（左）:", self._make_path_row(self._left_edit))
+        root.addWidget(QLabel("配置一组或多组双向同步目录；每一行会独立建立左 ⇄ 右监听。"))
 
-        self._right_edit = QLineEdit()
-        self._right_edit.setPlaceholderText("目标目录（右侧），必填")
-        form.addRow("目标目录（右）:", self._make_path_row(self._right_edit))
+        self._sync_pair_table = QTableWidget(0, 2)
+        self._sync_pair_table.setHorizontalHeaderLabels(["左侧目录", "右侧目录"])
+        self._configure_path_table(self._sync_pair_table)
+        self._sync_pair_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self._sync_pair_table.setAlternatingRowColors(True)
+        self._sync_pair_table.itemChanged.connect(self._on_sync_pair_item_changed)
+        root.addWidget(self._sync_pair_table)
+
+        self._ensure_empty_sync_rows()
+
+        btn_row = QHBoxLayout()
+        btn_add = QPushButton("➕  添加目录对")
+        btn_add.clicked.connect(self._add_sync_pair)
+        btn_remove = QPushButton("➖  删除所选")
+        btn_remove.clicked.connect(self._remove_sync_pair)
+        btn_row.addWidget(btn_add)
+        btn_row.addWidget(btn_remove)
+        btn_row.addStretch()
+        root.addLayout(btn_row)
 
         return w
+
+    def _ensure_empty_sync_rows(self, min_empty: int = 2) -> None:
+        """确保目录同步表格末尾至少有指定数量的空行。"""
+        empty_count = 0
+        for r in range(self._sync_pair_table.rowCount() - 1, -1, -1):
+            left_item = self._sync_pair_table.item(r, 0)
+            right_item = self._sync_pair_table.item(r, 1)
+            left = left_item.text().strip() if left_item else ""
+            right = right_item.text().strip() if right_item else ""
+            if not left and not right:
+                empty_count += 1
+            else:
+                break
+
+        for _ in range(min_empty - empty_count):
+            row = self._sync_pair_table.rowCount()
+            self._sync_pair_table.insertRow(row)
+            self._sync_pair_table.setItem(row, 0, self._make_path_item(""))
+            self._sync_pair_table.setItem(row, 1, self._make_path_item(""))
+
+    def _on_sync_pair_item_changed(self, item: QTableWidgetItem) -> None:
+        """当目录同步表格项改变时，按需补空行。"""
+        item.setToolTip(item.text().strip())
+        row = item.row()
+        if row == self._sync_pair_table.rowCount() - 1:
+            left_item = self._sync_pair_table.item(row, 0)
+            right_item = self._sync_pair_table.item(row, 1)
+            left = left_item.text().strip() if left_item else ""
+            right = right_item.text().strip() if right_item else ""
+            if left or right:
+                self._ensure_empty_sync_rows()
+
+    def _add_sync_pair(self) -> None:
+        """弹出目录选择对话框添加一行目录同步。"""
+        left = QFileDialog.getExistingDirectory(self, "选择左侧目录", str(Path.home()))
+        if not left:
+            return
+        right = QFileDialog.getExistingDirectory(self, "选择右侧目录", left)
+        if not right:
+            return
+
+        for r in range(self._sync_pair_table.rowCount()):
+            left_item = self._sync_pair_table.item(r, 0)
+            right_item = self._sync_pair_table.item(r, 1)
+            left_text = left_item.text().strip() if left_item else ""
+            right_text = right_item.text().strip() if right_item else ""
+            if not left_text and not right_text:
+                self._sync_pair_table.setItem(r, 0, self._make_path_item(left))
+                self._sync_pair_table.setItem(r, 1, self._make_path_item(right))
+                self._ensure_empty_sync_rows()
+                return
+
+        row = self._sync_pair_table.rowCount()
+        self._sync_pair_table.insertRow(row)
+        self._sync_pair_table.setItem(row, 0, self._make_path_item(left))
+        self._sync_pair_table.setItem(row, 1, self._make_path_item(right))
+        self._ensure_empty_sync_rows()
+
+    def _remove_sync_pair(self) -> None:
+        """删除已选目录同步行。"""
+        rows = sorted({idx.row() for idx in self._sync_pair_table.selectedIndexes()}, reverse=True)
+        for r in rows:
+            self._sync_pair_table.removeRow(r)
+        self._ensure_empty_sync_rows()
 
     # ── Tab 2：行为控制 ────────────────────────────────────────────────────
 
@@ -393,6 +472,20 @@ class SyncSettingsDialog(QDialog):
 
     # ── 辅助 ───────────────────────────────────────────────────────────────
 
+    def _configure_path_table(self, table: QTableWidget) -> None:
+        """路径列左右平分显示，避免 Qt 把长路径显示成 D:...。"""
+        table.setWordWrap(False)
+        table.setTextElideMode(Qt.TextElideMode.ElideNone)
+        table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        header = table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+
+    def _make_path_item(self, text: str) -> QTableWidgetItem:
+        item = QTableWidgetItem(text)
+        if text:
+            item.setToolTip(text)
+        return item
+
     def _make_path_row(self, edit: QLineEdit, is_file: bool = False) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
@@ -420,6 +513,26 @@ class SyncSettingsDialog(QDialog):
         if chosen:
             edit.setText(chosen)
 
+    def _sync_pairs_from_cfg(self, sync_cfg: dict) -> list[dict[str, str]]:
+        """读取新版 sync.pairs，并兼容旧版 sync.left/right。"""
+        result: list[dict[str, str]] = []
+        raw_pairs = sync_cfg.get("pairs") or []
+        if isinstance(raw_pairs, list):
+            for pair in raw_pairs:
+                if not isinstance(pair, dict):
+                    continue
+                left = str(pair.get("left", "")).strip()
+                right = str(pair.get("right", "")).strip()
+                if left and right:
+                    result.append({"left": left, "right": right})
+
+        left = str(sync_cfg.get("left", "")).strip()
+        right = str(sync_cfg.get("right", "")).strip()
+        legacy_pair = {"left": left, "right": right}
+        if left and right and legacy_pair not in result:
+            result.append(legacy_pair)
+        return result
+
     # ── 填充 / 收集 ────────────────────────────────────────────────────────
 
     def _populate(self) -> None:
@@ -428,22 +541,35 @@ class SyncSettingsDialog(QDialog):
         # 单文件同步
         fs = c.get("file_sync", {})
         pairs = fs.get("pairs", []) or []
-        self._file_pair_table.setRowCount(0)
-        for pair in pairs:
-            if not isinstance(pair, dict):
-                continue
-            row = self._file_pair_table.rowCount()
-            self._file_pair_table.insertRow(row)
-            self._file_pair_table.setItem(row, 0, QTableWidgetItem(str(pair.get("src", ""))))
-            self._file_pair_table.setItem(row, 1, QTableWidgetItem(str(pair.get("dst", ""))))
+        self._file_pair_table.blockSignals(True)
+        try:
+            self._file_pair_table.setRowCount(0)
+            for pair in pairs:
+                if not isinstance(pair, dict):
+                    continue
+                row = self._file_pair_table.rowCount()
+                self._file_pair_table.insertRow(row)
+                self._file_pair_table.setItem(row, 0, self._make_path_item(str(pair.get("src", ""))))
+                self._file_pair_table.setItem(row, 1, self._make_path_item(str(pair.get("dst", ""))))
+        finally:
+            self._file_pair_table.blockSignals(False)
         self._copy_on_start_chk.setChecked(bool(fs.get("copy_on_start", True)))
         
         self._ensure_empty_rows()
 
         # 双向目录同步
         s = c.get("sync", {})
-        self._left_edit.setText(s.get("left", ""))
-        self._right_edit.setText(s.get("right", ""))
+        self._sync_pair_table.blockSignals(True)
+        try:
+            self._sync_pair_table.setRowCount(0)
+            for pair in self._sync_pairs_from_cfg(s):
+                row = self._sync_pair_table.rowCount()
+                self._sync_pair_table.insertRow(row)
+                self._sync_pair_table.setItem(row, 0, self._make_path_item(pair["left"]))
+                self._sync_pair_table.setItem(row, 1, self._make_path_item(pair["right"]))
+        finally:
+            self._sync_pair_table.blockSignals(False)
+        self._ensure_empty_sync_rows()
 
         b = c.get("behavior", {})
         self._initial_sync_chk.setChecked(bool(b.get("initial_sync", True)))
@@ -487,14 +613,26 @@ class SyncSettingsDialog(QDialog):
             if src and dst:
                 pairs.append({"src": src, "dst": dst})
 
+        # 双向目录同步
+        sync_pairs: list[dict] = []
+        for r in range(self._sync_pair_table.rowCount()):
+            left_item = self._sync_pair_table.item(r, 0)
+            right_item = self._sync_pair_table.item(r, 1)
+            left = left_item.text().strip() if left_item else ""
+            right = right_item.text().strip() if right_item else ""
+            if left and right:
+                sync_pairs.append({"left": left, "right": right})
+        first_sync_pair = sync_pairs[0] if sync_pairs else {"left": "", "right": ""}
+
         return {
             "file_sync": {
                 "pairs": pairs,
                 "copy_on_start": self._copy_on_start_chk.isChecked(),
             },
             "sync": {
-                "left": self._left_edit.text().strip(),
-                "right": self._right_edit.text().strip(),
+                "pairs": sync_pairs,
+                "left": first_sync_pair["left"],
+                "right": first_sync_pair["right"],
             },
             "behavior": {
                 "initial_sync": self._initial_sync_chk.isChecked(),
@@ -533,13 +671,13 @@ class SyncSettingsDialog(QDialog):
 
     def _on_accept(self) -> None:
         cfg = self._collect()
-        has_dir_sync = cfg["sync"]["left"] and cfg["sync"]["right"]
+        has_dir_sync = bool(cfg["sync"]["pairs"])
         has_file_sync = bool(cfg["file_sync"]["pairs"])
         if not has_dir_sync and not has_file_sync:
             QMessageBox.warning(
                 self,
                 "配置不完整",
-                "请至少配置一种同步：\n• 目录同步：填写源目录和目标目录\n• 文件同步：添加至少一条文件匹配",
+                "请至少配置一种同步：\n• 目录同步：添加至少一条目录对\n• 文件同步：添加至少一条文件匹配",
             )
             return
         try:
@@ -559,10 +697,8 @@ class SyncSettingsDialog(QDialog):
         b = cfg.get("behavior", {})
         rc = cfg.get("ready_check", {})
         args: list[str] = []
-        if s.get("left"):
-            args += ["--left", s["left"]]
-        if s.get("right"):
-            args += ["--right", s["right"]]
+        for pair in self._sync_pairs_from_cfg(s):
+            args += ["--pair", pair["left"], pair["right"]]
         if not b.get("initial_sync", True):
             args.append("--no-initial-sync")
         if b.get("propagate_delete", False):

@@ -2,6 +2,11 @@ file_sync:
   pairs: []
   copy_on_start: true
 sync:
+  pairs:
+  - left: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\wuwo
+    right: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\wuwo_test_install\wuwo
+  - left: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\rez-package-source\qt_wgt_lib\999.0\src\qt_wgt_lib
+    right: D:\TD_Depot\Wuzu_dev\anim_upload_muse_tool\src\anim_upload_muse_tool\@baselibs\qt_wgt_lib
   left: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\wuwo
   right: D:\TD_Depot\Software\Lugwit_syncPlug\lugwit_insapp\trayapp\wuwo_test_install\wuwo
 behavior:
