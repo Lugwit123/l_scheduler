@@ -45,7 +45,7 @@
       "success_return_codes": [0],
       "schedule": {
         "type": "interval",
-        "seconds": 3600.0
+        "seconds": 36000.0
       },
       "working_directory": "D:/TD_Depot/Software/Lugwit_syncPlug/lugwit_insapp/trayapp/rez-package-source/repo_tools"
     },
